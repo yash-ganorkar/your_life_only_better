@@ -1,0 +1,3 @@
+rootProject.name = 'your_life_only_better'
+
+include ':app'
