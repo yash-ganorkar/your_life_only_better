@@ -8,7 +8,7 @@ class Logo extends Component {
         return (
             <View style={styles.container}>
                 <Image style={{justifyContent: 'flex-end'}} source={logo}/>
-                <Text style={{justifyContent: 'flex-end', color: '#fff', marginVertical: 10}}> Opportunites, Jobs and
+                <Text style={{justifyContent: 'flex-start', color: '#fff', marginVertical: 0}}> Opportunites, Jobs and
                     Community Connections </Text>
             </View>
         );

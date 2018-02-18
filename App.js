@@ -1,14 +1,15 @@
 import React, {Component} from 'react'
 import {StatusBar, StyleSheet, View} from 'react-native'
-import Register from "./src/Components/Register/Register";
+import Routes from "./src/Routes";
 
 
 class App extends Component {
     render() {
         return (
+
             <View style={styles.container}>
                 <StatusBar backgroundColor="#1c313a" barStyle="dark-content"/>
-                <Register/>
+                <Routes/>
             </View>
         );
     }
