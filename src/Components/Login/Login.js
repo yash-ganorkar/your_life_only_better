@@ -9,8 +9,6 @@ import {
     TouchableWithoutFeedback,
     View
 } from 'react-native'
-
-
 import Logo from "../Login/Logo/Logo";
 import Form from "./Form/Form";
 
@@ -20,7 +18,7 @@ class Login extends Component {
         return (
             <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
                 <KeyboardAvoidingView keyboardVerticalOffset={offset} behavior="padding">
-                    <View>
+                    <View style={styles.container}>
                         <Logo/>
                         <Form/>
                         <View style={styles.signUpTextContent}>
@@ -44,10 +42,10 @@ const styles = StyleSheet.create({
         justifyContent: 'center'
     },
     signUpTextContent: {
-        flex: 1,
-        alignItems: 'center',
+        flexGrow: 1,
+        alignItems: 'flex-end',
         justifyContent: 'center',
-        flexDirection: 'column',
+        flexDirection: 'row',
         marginVertical: 20
     },
     signUpText: {

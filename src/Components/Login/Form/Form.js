@@ -1,7 +1,6 @@
 import React, {Component} from 'react'
 import {StyleSheet, Text, TextInput, TouchableOpacity, View} from 'react-native'
 
-
 class Form extends Component {
     render() {
         return (
@@ -33,7 +32,6 @@ class Form extends Component {
         );
     }
 }
-
 
 const styles = StyleSheet.create({
     container: {
