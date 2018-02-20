@@ -1,9 +1,69 @@
 import React, {Component} from 'react'
-import {StyleSheet, Text, TextInput, TouchableOpacity, View} from 'react-native'
+import {ActivityIndicator, Alert, StyleSheet, Text, TextInput, TouchableOpacity, View} from 'react-native'
 import {KeyboardAwareScrollView} from "react-native-keyboard-aware-scroll-view";
 
+import axios from '../../../Services/Services'
 
 class Form extends Component {
+
+    performLogin = () => {
+
+        let editable = false
+        let loading = true
+
+        this.setState({
+            loading: loading,
+            editable: editable
+        })
+
+        let data = {
+            username: this.state.username,
+            password: this.state.password
+        }
+
+        axios.post('/login', data)
+            .then(response => {
+                console.log(response.data);
+                this.setState({
+                    username: response.data.username,
+                    access_token: response.data.access_token,
+                    loading: !loading,
+                    editable: !editable
+                });
+
+                Alert.alert("Yolibe", "Login Successful",
+                    [{text: 'OK', onPress: () => console.log('OK Pressed')}], {cancelable: false})
+
+
+            })
+            .catch(error => {
+                console.log(error);
+
+                this.setState({
+                    loading: !loading,
+                    editable: !editable
+                });
+
+                Alert.alert("Yolibe", "Something went wrong!",
+                    [{text: 'OK', onPress: () => console.log('OK Pressed')}], {cancelable: false})
+
+
+            })
+
+
+    }
+
+    constructor() {
+        super();
+
+        this.state = {
+            username: "",
+            password: "",
+            loading: false,
+            editable: true
+        }
+    }
+
     render() {
         return (
             <View style={styles.container}>
@@ -21,6 +81,8 @@ class Form extends Component {
                                returnKeyType="next"
                                onSubmitEditing={() => this.passwordInput.focus()}
                                autoCorrect={false}
+                               editable={this.state.editable}
+                               onChangeText={(username) => this.setState({username: username})}
                                placeholderTextColor="#fff"/>
                     <TextInput underlineColorAndroid="transparent"
                                style={styles.inputBox}
@@ -28,13 +90,17 @@ class Form extends Component {
                                ref={(input) => this.passwordInput = input}
                                secureTextEntry
                                returnKeyType="go"
+                               editable={this.state.editable}
                                autoCapitalize="none"
+                               onChangeText={(password) => this.setState({password: password})}
                                autoCorrect={false}
                                placeholderTextColor="#fff"/>
 
-                    <TouchableOpacity style={styles.button}>
+                    <TouchableOpacity onPress={this.performLogin} style={styles.button}>
                         <Text style={styles.buttonText}>Login</Text>
                     </TouchableOpacity>
+                    <ActivityIndicator size="large" color="#0000ff" style={{opacity: this.state.loading ? 1.0 : 0.0}}
+                                       animating={true}/>
                 </KeyboardAwareScrollView>
             </View>
         );

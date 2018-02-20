@@ -8,6 +8,11 @@ class Register extends Component {
     static navigationOptions = {
         header: null
     }
+
+    alertBox = () => {
+        this.props.navigation.goBack()
+    }
+
     render() {
         const {navigate} = this.props.navigation
         const offset = (Platform.OS === 'android') ? -70 : 0;
@@ -17,13 +22,13 @@ class Register extends Component {
                     <View style={{backgroundColor: 'white', flex: 1, paddingTop: 20}}>
                         <Logo/>
                     </View>
-                    <View style={{backgroundColor: 'white', flex: 2, paddingTop: 20}}>
-                        <Form/>
+                    <View style={{backgroundColor: 'white', flex: 2.48, paddingTop: 20}}>
+                        <Form alertMe={this.alertBox}/>
                     </View>
                     <View style={{backgroundColor: 'white', flex: 0.2, paddingTop: 20}}>
                         <View style={styles.container}>
                             <Text>Have an account?</Text>
-                            <TouchableOpacity onPress={() => navigate('Register')} style={styles.button}>
+                            <TouchableOpacity onPress={this.alertBox} style={styles.button}>
                                 <Text style={styles.signUpButton}> Sign In </Text>
                             </TouchableOpacity>
                         </View>
