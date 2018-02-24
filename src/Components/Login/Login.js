@@ -8,6 +8,11 @@ class Login extends Component {
     static navigationOptions = {
         header: null
     }
+
+    goToTutotials = () => {
+
+        this.props.navigation.navigate("Tutorials")
+    }
     render() {
         const {navigate} = this.props.navigation
         const offset = (Platform.OS === 'android') ? -70 : 0;
@@ -17,7 +22,7 @@ class Login extends Component {
                     <Logo/>
                 </View>
                 <View style={{backgroundColor: 'white', flex: 2, paddingTop: 20}}>
-                    <Form/>
+                    <Form goToTutorials={this.goToTutotials}/>
                 </View>
                 <View style={{backgroundColor: 'white', flex: 0.5, paddingTop: 20}}>
                     <View style={styles.container}>

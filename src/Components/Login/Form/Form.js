@@ -32,7 +32,7 @@ class Form extends Component {
                 });
 
                 Alert.alert("Yolibe", "Login Successful",
-                    [{text: 'OK', onPress: () => console.log('OK Pressed')}], {cancelable: false})
+                    [{text: 'OK', onPress: () => this.props.goToTutorials()}], {cancelable: false})
 
 
             })

@@ -13,8 +13,28 @@ class Register extends Component {
         this.props.navigation.goBack()
     }
 
+    componentDidMount() {
+        this.watchId = navigator.geolocation.watchPosition(
+            (position) => {
+                console.log(position)
+                // this.setState({
+                //     latitude: position.coords.latitude,
+                //     longitude: position.coords.longitude,
+                //     error: null,
+                // });
+            },
+            (error) => {
+                console.log(error)
+            },
+            {enableHighAccuracy: true, timeout: 20000, maximumAge: 1000, distanceFilter: 10},
+        );
+    }
+
+    componentWillUnmount() {
+        navigator.geolocation.clearWatch(this.watchId);
+    }
+
     render() {
-        const {navigate} = this.props.navigation
         const offset = (Platform.OS === 'android') ? -70 : 0;
         return (
             <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>

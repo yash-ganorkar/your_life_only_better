@@ -1,21 +1,21 @@
 import React, {Component} from 'react'
 import {StatusBar, StyleSheet, View} from 'react-native'
-import Register from "./src/Components/Register/Register";
-
 import {StackNavigator} from 'react-navigation'
-import Login from "./src/Components/Login/Login";
-import Tutorials from "./src/Components/MainContent/Tutorials";
+
+import Tutorial1 from "./Tutorials/Tutorial1";
+import Tutorial2 from "./Tutorials/Tutorial2";
+
 
 const NavigationApp = StackNavigator({
-    Login: {screen: Login},
-    Register: {screen: Register},
-    Tutorials: {screen: Tutorials},
+    Tutorial1: {screen: Tutorial1},
+    Tutorial2: {screen: Tutorial2},
 }, {
     headerMode: 'none'
 })
 
 
-class App extends Component {
+class Tutorials extends Component {
+
     render() {
         return (
             <View style={{flex: 1}}>
@@ -36,4 +36,4 @@ const styles = StyleSheet.create({
     }
 });
 
-export default App
+export default Tutorials
