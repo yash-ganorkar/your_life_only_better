@@ -1,22 +1,33 @@
 import React, {Component} from 'react'
 import {StatusBar, StyleSheet, View} from 'react-native'
-import Register from "./src/Components/Register/Register";
+
+import {StackNavigator} from 'react-navigation'
+import Tutorials from "./src/Components/MainContent/Tutorials";
+
+const NavigationApp = StackNavigator({
+    // Login: {screen: Login},
+    // Register: {screen: Register},
+    Tutorials: {screen: Tutorials},
+}, {
+    headerMode: 'none'
+})
 
 
 class App extends Component {
     render() {
         return (
-            <View style={styles.container}>
-                <StatusBar backgroundColor="#1c313a" barStyle="dark-content"/>
-                <Register/>
+            <View style={{flex: 1}}>
+                <StatusBar barStyle="dark-content" hidden={false}/>
+                <NavigationApp/>
             </View>
         );
     }
 }
 
+
 const styles = StyleSheet.create({
     container: {
-        backgroundColor: '#455a64',
+        backgroundColor: '#000',
         flex: 1,
         alignItems: 'center',
         justifyContent: 'center'

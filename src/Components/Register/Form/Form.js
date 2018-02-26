@@ -1,50 +1,131 @@
 import React, {Component} from 'react'
-import {StyleSheet, Text, TextInput, TouchableOpacity, View} from 'react-native'
+import {ActivityIndicator, Alert, StyleSheet, Text, TextInput, TouchableOpacity, View} from 'react-native'
+import {KeyboardAwareScrollView} from "react-native-keyboard-aware-scroll-view";
+import axios from "../../../Services/Services";
 
 class Form extends Component {
+
+    performRegister = () => {
+
+
+        let editable = false
+        let loading = true
+
+        this.setState({
+            loading: loading,
+            editable: editable
+        })
+
+
+        let data = {
+            username: this.state.username,
+            password: this.state.password,
+            phone1: this.state.phone,
+            address1: "243 W Cermak Road",
+            address2: "Chicago, IL",
+            fullName: this.state.name
+        }
+
+        axios.post('/anon/register', data)
+            .then(response => {
+                console.log(response.data);
+                this.setState({
+                    loading: !loading,
+                    editable: !editable
+                });
+
+                Alert.alert("Yolibe", "Registration Successful. Please Log In",
+                    [{text: 'OK', onPress: () => this.props.alertMe()}], {cancelable: false})
+
+
+            })
+            .catch(error => {
+                console.log(error);
+
+                this.setState({
+                    loading: !loading,
+                    editable: !editable
+                });
+
+                Alert.alert("Yolibe", "Something went wrong!",
+                    [{text: 'OK', onPress: () => console.log('OK Pressed')}], {cancelable: false})
+
+
+            })
+
+
+    }
+
+    constructor() {
+        super();
+
+        this.state = {
+            username: "",
+            password: "",
+            name: "",
+            phone: "",
+            loading: false,
+            editable: true
+        }
+    }
+
     render() {
         return (
-
             <View style={styles.container}>
-                <TextInput underlineColorAndroid="transparent"
-                           style={styles.inputBox}
-                           placeholder="Email"
-                           autoCapitalize="none"
-                           keyboardType="email-address"
-                           returnKeyType="next"
-                           onSubmitEditing={() => this.nameInput.focus()}
-                           autoCorrect={false}
-                           placeholderTextColor="#fff"/>
-                <TextInput underlineColorAndroid="transparent"
-                           ref={(input) => this.nameInput = input}
-                           style={styles.inputBox}
-                           placeholder="Name"
-                           autoCapitalize="words"
-                           keyboardType="default"
-                           returnKeyType="next"
-                           onSubmitEditing={() => this.passwordInput.focus()}
-                           autoCorrect={false}
-                           placeholderTextColor="#fff"/>
-                <TextInput underlineColorAndroid="transparent"
-                           style={styles.inputBox}
-                           placeholder="Password"
-                           ref={(input) => this.passwordInput = input}
-                           secureTextEntry
-                           returnKeyType="next"
-                           onSubmitEditing={() => this.phoneInput.focus()}
-                           autoCapitalize="none"
-                           autoCorrect={false}
-                           placeholderTextColor="#fff"/>
-                <TextInput underlineColorAndroid="transparent"
-                           ref={(input) => this.phoneInput = input}
-                           style={styles.inputBox}
-                           placeholder="Phone"
-                           keyboardType="phone-pad"
-                           placeholderTextColor="#fff"/>
+                <KeyboardAwareScrollView
+                    enableOnAndroid={false}
+                    style={{backgroundColor: '#fff'}}
+                    resetScrollToCoords={{x: 0, y: 0}}
+                    contentContainerStyle={styles.container}
+                    scrollEnabled={true}
+                >
+                    <TextInput underlineColorAndroid="transparent"
+                               style={styles.inputBox}
+                               placeholder="Email"
+                               autoCapitalize="none"
+                               keyboardType="email-address"
+                               returnKeyType="next"
+                               onChangeText={(email) => this.setState({username: email})}
+                               onSubmitEditing={() => this.nameInput.focus()}
+                               autoCorrect={false}
+                               placeholderTextColor="#fff"/>
+                    <TextInput underlineColorAndroid="transparent"
+                               ref={(input) => this.nameInput = input}
+                               style={styles.inputBox}
+                               placeholder="Name"
+                               autoCapitalize="words"
+                               keyboardType="default"
+                               returnKeyType="next"
+                               onChangeText={(name) => this.setState({name: name})}
+                               onSubmitEditing={() => this.passwordInput.focus()}
+                               autoCorrect={false}
+                               placeholderTextColor="#fff"/>
+                    <TextInput underlineColorAndroid="transparent"
+                               style={styles.inputBox}
+                               placeholder="Password"
+                               ref={(input) => this.passwordInput = input}
+                               secureTextEntry
+                               returnKeyType="next"
+                               onChangeText={(password) => this.setState({password: password})}
+                               onSubmitEditing={() => this.phoneInput.focus()}
+                               autoCapitalize="none"
+                               autoCorrect={false}
+                               placeholderTextColor="#fff"/>
+                    <TextInput underlineColorAndroid="transparent"
+                               ref={(input) => this.phoneInput = input}
+                               style={styles.inputBox}
+                               onChangeText={(phone) => this.setState({phone: phone})}
+                               placeholder="Phone (optional)"
+                               keyboardType="phone-pad"
+                               placeholderTextColor="#fff"/>
 
-                <TouchableOpacity style={styles.button}>
-                    <Text style={styles.buttonText}>Register</Text>
-                </TouchableOpacity>
+                    <TouchableOpacity onPress={this.performRegister} style={styles.button}>
+                        <Text style={styles.buttonText}>Register</Text>
+                    </TouchableOpacity>
+                    <ActivityIndicator size="large" color="#0000ff" style={{opacity: this.state.loading ? 1.0 : 0.0}}
+                                       animating={true}/>
+
+                </KeyboardAwareScrollView>
             </View>
         );
     }
@@ -52,8 +133,8 @@ class Form extends Component {
 
 const styles = StyleSheet.create({
     container: {
-        flexGrow: 1,
-        justifyContent: 'center',
+        flex: 1,
+        justifyContent: 'flex-start',
         alignItems: 'center',
     },
     inputBox: {
@@ -61,9 +142,10 @@ const styles = StyleSheet.create({
         height: 50,
         fontSize: 16,
         marginVertical: 10,
-        backgroundColor: 'rgba(255,255,255,0.3)',
+        backgroundColor: 'rgba(0,0,0,0.7)',
         borderRadius: 20,
-        paddingHorizontal: 20
+        paddingHorizontal: 20,
+        color: '#fff'
     },
     button: {
         width: 300,
@@ -79,6 +161,15 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         color: '#fff',
         textAlign: 'center'
+    },
+    signUpText: {
+        fontSize: 16,
+        color: 'rgba(0,0,0,0.3)'
+    },
+    signUpButton: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        color: 'rgba(255,255,255,0.9)'
     }
 });
 

@@ -1,63 +1,56 @@
 import React, {Component} from 'react'
-import {
-    Keyboard,
-    KeyboardAvoidingView,
-    Platform,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    TouchableWithoutFeedback,
-    View
-} from 'react-native'
+import {Platform, StyleSheet, Text, TouchableOpacity, View} from 'react-native'
 import Logo from "../Login/Logo/Logo";
 import Form from "./Form/Form";
+import Footer from "../Footer/Footer";
 
 class Login extends Component {
+    static navigationOptions = {
+        header: null
+    }
+
+    goToTutotials = () => {
+
+        this.props.navigation.navigate("Tutorials")
+    }
     render() {
+        const {navigate} = this.props.navigation
         const offset = (Platform.OS === 'android') ? -70 : 0;
         return (
-            <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-                <KeyboardAvoidingView keyboardVerticalOffset={offset} behavior="padding">
+            <View style={{flex: 1}}>
+                <View style={{backgroundColor: 'white', flex: 1.5, paddingTop: 20}}>
+                    <Logo/>
+                </View>
+                <View style={{backgroundColor: 'white', flex: 2, paddingTop: 20}}>
+                    <Form goToTutorials={this.goToTutotials}/>
+                </View>
+                <View style={{backgroundColor: 'white', flex: 0.5, paddingTop: 20}}>
                     <View style={styles.container}>
-                        <Logo/>
-                        <Form/>
-                        <View style={styles.signUpTextContent}>
-                            <Text style={styles.signUpText}> Don't have an account?</Text>
-                            <TouchableOpacity style={styles.button}>
-                                <Text style={styles.signUpButton}> Sign Up </Text>
-                            </TouchableOpacity>
-                        </View>
+                        <Text>Don't have an account?</Text>
+                        <TouchableOpacity onPress={() => navigate('Register')} style={styles.button}>
+                            <Text style={styles.signUpButton}> Create New </Text>
+                        </TouchableOpacity>
                     </View>
-                </KeyboardAvoidingView>
-            </TouchableWithoutFeedback>
+                </View>
+                <View style={{backgroundColor: 'black', flex: 0.2}}>
+                    <Footer/>
+                </View>
+            </View>
         );
     }
 }
 
 const styles = StyleSheet.create({
     container: {
-        backgroundColor: '#455a64',
         flex: 1,
-        alignItems: 'center',
-        justifyContent: 'center'
-    },
-    signUpTextContent: {
-        flexGrow: 1,
-        alignItems: 'flex-end',
-        justifyContent: 'center',
         flexDirection: 'row',
-        marginVertical: 20
-    },
-    signUpText: {
-        fontSize: 16,
-        color: 'rgba(255,255,255,0.3)'
+        justifyContent: 'center',
+        alignItems: 'flex-start',
     },
     signUpButton: {
-        fontSize: 16,
-        fontWeight: 'bold',
-        color: 'rgba(255,255,255,0.9)'
+        color: 'blue'
     }
-});
+})
 
 
 export default Login;
