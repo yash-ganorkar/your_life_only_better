@@ -1,7 +1,7 @@
 import React, {Component} from 'react'
 import {StatusBar, StyleSheet, View} from 'react-native'
-
 import {StackNavigator} from 'react-navigation'
+
 import Tutorials from "./src/Components/MainContent/Tutorials";
 
 const NavigationApp = StackNavigator({
