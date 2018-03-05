@@ -7,6 +7,8 @@ import Home from "../Home/Home";
 import Conversations from "../Conversations/Conversations";
 import Settings from "../Settings/Settings";
 import Management from "../Management/Management";
+import {Provider} from "react-redux";
+import store from "../../../store";
 
 
 const DrawerStack = DrawerNavigator({
@@ -47,10 +49,12 @@ class Welcome extends Component {
 
     render() {
         return (
-            <View style={{flex: 1}}>
-                <StatusBar barStyle="light-content" hidden={false}/>
-                <DrawerNavigation/>
-            </View>
+            <Provider store={store}>
+                <View style={{flex: 1}}>
+                    <StatusBar barStyle="light-content" hidden={false}/>
+                    <DrawerNavigation/>
+                </View>
+            </Provider>
         )
     }
 }
