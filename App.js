@@ -1,12 +1,13 @@
 import React, {Component} from 'react'
 import {StatusBar, StyleSheet, View} from 'react-native'
 import {StackNavigator} from 'react-navigation'
-
 import Tutorials from "./src/Components/MainContent/Tutorials";
+import Login from "./src/Components/Login/Login";
+import Register from "./src/Components/Register/Register";
 
 const NavigationApp = StackNavigator({
-    // Login: {screen: Login},
-    // Register: {screen: Register},
+    Login: {screen: Login},
+    Register: {screen: Register},
     Tutorials: {screen: Tutorials},
 }, {
     headerMode: 'none'

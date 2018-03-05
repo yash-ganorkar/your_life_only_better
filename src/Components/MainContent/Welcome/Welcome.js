@@ -1,10 +1,12 @@
 import React, {Component} from 'react'
 import {DrawerNavigator, StackNavigator} from "react-navigation";
+import {BackHandler, Platform, StatusBar, Text, ToastAndroid, View} from "react-native";
+
+
 import Home from "../Home/Home";
 import Conversations from "../Conversations/Conversations";
 import Settings from "../Settings/Settings";
 import Management from "../Management/Management";
-import {BackHandler, Platform, StatusBar, Text, ToastAndroid, View} from "react-native";
 
 
 const DrawerStack = DrawerNavigator({
@@ -52,5 +54,6 @@ class Welcome extends Component {
         )
     }
 }
+
 
 export default Welcome

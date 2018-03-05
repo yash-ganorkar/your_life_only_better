@@ -5,6 +5,7 @@ import {StackNavigator} from 'react-navigation'
 import Tutorial1 from "./Tutorials/Tutorial1";
 import Tutorial2 from "./Tutorials/Tutorial2";
 import Welcome from "./Welcome/Welcome";
+import store from "../../store";
 
 
 const NavigationApp = StackNavigator({
@@ -22,7 +23,7 @@ class Tutorials extends Component {
         return (
             <View style={{flex: 1}}>
                 <StatusBar barStyle="light-content" hidden={false}/>
-                <NavigationApp/>
+                <NavigationApp store={store}/>
             </View>
         );
     }

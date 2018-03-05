@@ -3,45 +3,43 @@ import {ActivityIndicator, Alert, StyleSheet, Text, TextInput, TouchableOpacity,
 import {KeyboardAwareScrollView} from "react-native-keyboard-aware-scroll-view";
 
 import axios from '../../../Services/Services'
+import {connect} from 'react-redux'
+
 
 class Form extends Component {
 
     performLogin = () => {
-
-        let editable = false
-        let loading = true
-
+        const {loading, editable} = this.state;
         this.setState({
-            loading: loading,
-            editable: editable
-        })
+            loading: !loading,
+            editable: !editable
+        });
+
+        console.log(this.props.username)
+        console.log(this.props.password)
 
         let data = {
-            username: this.state.username,
-            password: this.state.password
+            username: this.props.username,
+            password: this.props.password
         }
 
         axios.post('/login', data)
             .then(response => {
-                console.log(response.data);
+
+                this.props.onLoginSuccessful(response.data.username, response.data.access_token)
                 this.setState({
-                    username: response.data.username,
-                    access_token: response.data.access_token,
-                    loading: !loading,
-                    editable: !editable
+                    loading: loading,
+                    editable: editable
                 });
 
                 Alert.alert("Yolibe", "Login Successful",
                     [{text: 'OK', onPress: () => this.props.goToTutorials()}], {cancelable: false})
-
-
             })
             .catch(error => {
                 console.log(error);
-
                 this.setState({
-                    loading: !loading,
-                    editable: !editable
+                    loading: loading,
+                    editable: editable
                 });
 
                 Alert.alert("Yolibe", "Something went wrong!",
@@ -53,12 +51,9 @@ class Form extends Component {
 
     }
 
-    constructor() {
-        super();
-
+    constructor(props) {
+        super(props);
         this.state = {
-            username: "",
-            password: "",
             loading: false,
             editable: true
         }
@@ -82,7 +77,7 @@ class Form extends Component {
                                onSubmitEditing={() => this.passwordInput.focus()}
                                autoCorrect={false}
                                editable={this.state.editable}
-                               onChangeText={(username) => this.setState({username: username})}
+                               onChangeText={(username) => this.props.onUsernameChanged(username)}
                                placeholderTextColor="#fff"/>
                     <TextInput underlineColorAndroid="transparent"
                                style={styles.inputBox}
@@ -92,7 +87,7 @@ class Form extends Component {
                                returnKeyType="go"
                                editable={this.state.editable}
                                autoCapitalize="none"
-                               onChangeText={(password) => this.setState({password: password})}
+                               onChangeText={(password) => this.props.onPasswordChanged(password)}
                                autoCorrect={false}
                                placeholderTextColor="#fff"/>
 
@@ -104,6 +99,31 @@ class Form extends Component {
                 </KeyboardAwareScrollView>
             </View>
         );
+    }
+}
+
+const mapStateToProps = (state) => {
+    return {
+        username: state.username,
+        password: state.password,
+        access_token: state.access_token
+    }
+}
+
+const mapDispatchToProps = (dispatch) => {
+    return {
+        onUsernameChanged: (username) => {
+            const action = {type: 'USERNAMECHANGED', text: username}
+            dispatch(action)
+        },
+        onPasswordChanged: (password) => {
+            const action = {type: 'PASSWORDCHANGED', text: password}
+            dispatch(action)
+        },
+        onLoginSuccessful: (username, access_token) => {
+            const action = {type: 'LOGINSUCCESSFUL', username: username, access_token: access_token}
+            dispatch(action)
+        }
     }
 }
 
@@ -150,4 +170,4 @@ const styles = StyleSheet.create({
 });
 
 
-export default Form
+export default connect(mapStateToProps, mapDispatchToProps)(Form)
