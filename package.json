@@ -8,17 +8,21 @@
   },
   "dependencies": {
     "axios": "^0.17.1",
+    "impagination": "^1.0.0-alpha.3",
+    "native-base": "^2.3.9",
     "prop-types": "^15.6.1",
     "react": "16.2.0",
     "react-native": "0.53.0",
     "react-native-autolink": "^1.4.0",
+    "react-native-cached-image": "^1.4.3",
     "react-native-keyboard-aware-scroll-view": "^0.4.3",
     "react-native-nav": "^2.0.2",
     "react-native-navigation": "^1.1.378",
     "react-native-router-flux": "^4.0.0-beta.28",
     "react-navigation": "^1.0.3",
     "react-redux": "^5.0.7",
-    "redux": "^3.7.2"
+    "redux": "^3.7.2",
+    "util": "^0.10.3"
   },
   "devDependencies": {
     "babel-jest": "22.2.2",

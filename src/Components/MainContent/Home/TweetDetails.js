@@ -1,25 +1,26 @@
 import React from 'react'
-import {Image, Text, View} from 'react-native'
+import {Text, View} from 'react-native'
 import Card from '../../Cards/Card'
 import CardItem from '../../Cards/CardItem'
 
 import Autolink from "react-native-autolink";
+import {CachedImage} from "react-native-cached-image";
 
 const TweetDetails = ({tweetDetails}) => {
     const {
         hashtags, sharedWithNetworks, sharedDate, network, sentToPartnerNetworks, field1
         , moneytags, media1, savedToProfile, networkOpportunity, sharedBy
         , score, responses, id, user, sharedWithUsers
-    } = tweetDetails
+    } = tweetDetails;
 
-    console.log(sharedBy.profile.path)
+    console.log(sharedBy.profile.path);
     return (
         <Card>
             <CardItem>
                 <View style={{flexDirection: 'row', alignItems: 'center', flex: 1}}>
                     <View style={{flex: 0.2}}>
-                        <Image style={{width: 50, height: 50, borderRadius: 10}}
-                               source={{uri: sharedBy.profile.path}}/>
+                        <CachedImage style={{width: 50, height: 50, borderRadius: 10}}
+                                     source={{uri: sharedBy.profile.path}}/>
                     </View>
                     <View style={{flex: 0.3}}>
                         <Text style={{fontSize: 18}}>{sharedBy.fullName}</Text>
@@ -45,6 +46,6 @@ const TweetDetails = ({tweetDetails}) => {
     );
 
 
-}
+};
 
 export default TweetDetails;
