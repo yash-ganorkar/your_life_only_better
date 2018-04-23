@@ -9,17 +9,21 @@ import Settings from "../Settings/Settings";
 import Management from "../Management/Management";
 import {Provider} from "react-redux";
 import store from "../../../store";
+import ViewMention from "../Home/ViewMention";
+import ViewHashtags from "../Home/ViewHashtags";
 
 
 const DrawerStack = DrawerNavigator({
     Home: {screen: Home},
     Conversations: {screen: Conversations},
     Settings: {screen: Settings},
-    Management: {screen: Management},
-})
+    Management: {screen: Management}
+});
 
 const DrawerNavigation = StackNavigator({
-    DrawerStack: {screen: DrawerStack}
+    DrawerStack: {screen: DrawerStack},
+    ViewMention: {screen: ViewMention},
+    ViewHashtags: {screen: ViewHashtags}
 }, {
     headerMode: 'float',
     navigationOptions: ({navigation}) => ({
@@ -28,7 +32,7 @@ const DrawerNavigation = StackNavigator({
             navigation.navigate('DrawerOpen')
         }}>Menu</Text>
     })
-})
+});
 
 class Welcome extends Component {
 

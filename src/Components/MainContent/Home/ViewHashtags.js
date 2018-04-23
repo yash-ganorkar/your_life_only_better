@@ -1,22 +1,45 @@
 import React, {Component} from 'react'
-import {ListView, View} from "react-native";
+import {ListView, StyleSheet, Text, TextInput, View} from 'react-native'
+import axios from "../../../Services/Services";
+import update from "immutability-helper/index";
 import {connect} from "react-redux";
-import update from 'immutability-helper';
-
-
-import axios from '../../../Services/Services';
 import TweetDetails from "./TweetDetails";
 import Footer from './Footer'
 
-class Home extends Component {
+class ViewHashtags extends Component {
 
-    _navigate = (match) => {
-        console.log(match.matchedText);
+    static navigationOptions = ({navigation}) => {
 
-        if (match.matchedText.includes('@'))
-            this.props.navigation.navigate('ViewMention', {mention: match.matchedText});
-        else if (match.matchedText.includes('#'))
-            this.props.navigation.navigate('ViewHashtags', {hashtag: match.matchedText})
+        console.log(navigation.state);
+
+        return {
+            headerLeft: <View style={{flexDirection: 'row'}}>
+                <Text style={{color: 'white', paddingLeft: 20, marginTop: 5}} onPress={() => {
+                    navigation.goBack()
+                }}>Back</Text>
+                <TextInput underlineColorAndroid="transparent"
+                           style={{
+                               marginLeft: 20,
+                               width: 300,
+                               height: 30,
+                               fontSize: 16,
+                               paddingHorizontal: 20,
+                               backgroundColor: '#fff',
+                               borderRadius: 5,
+                               color: '#000'
+                           }}
+                           editable
+                           placeholder={navigation.state.params.hashtag}
+                           autoCapitalize="none"
+                           keyboardType="email-address"
+                           returnKeyType="search"
+                           onChangeText={(hashtag) => navigation.state.params.hashtag = hashtag}
+                           onSubmitEditing={navigation.state.params._submit}
+                           autoCorrect={false}
+                           placeholderTextColor="#000"/>
+
+            </View>,
+        }
     };
 
     _fetchData = () => {
@@ -25,7 +48,10 @@ class Home extends Component {
 
         let from = this.state.from;
         let size = this.state.size;
-        axios.get('/share/feed?from=' + from + '&size=' + size)
+
+        console.log(this.props.navigation.state.params.hashtag);
+
+        axios.get('/share/search?from=' + from + '&size=' + size + '&term=test')
             .then(response => {
 
                 if (this.state.tweets.length === 0) {
@@ -64,9 +90,13 @@ class Home extends Component {
             <TweetDetails key={Math.random()} _navigate={this._navigate} tweetDetails={tweet}/>
         )
     };
+    _submit = () => {
+        console.log('submit...', this.props.navigation)
+    };
 
     constructor(props) {
         super(props);
+        console.log(this.props);
 
         this.state = {
             tweets: [],
@@ -78,6 +108,10 @@ class Home extends Component {
             from: 0,
             size: 9
         };
+    }
+
+    componentDidMount() {
+        this.props.navigation.setParams({_submit: this._submit});
     }
 
     componentWillMount() {
@@ -94,6 +128,18 @@ class Home extends Component {
     }
 }
 
+const styles = StyleSheet.create({
+    inputBox: {
+        marginLeft: 20,
+        height: 50,
+        fontSize: 16,
+        backgroundColor: 'rgba(0,0,0,0.7)',
+        borderRadius: 5,
+        color: '#fff'
+    }
+});
+
+
 const mapStateToProps = (state) => {
     return {
         username: state.username,
@@ -102,4 +148,4 @@ const mapStateToProps = (state) => {
 };
 
 
-export default connect(mapStateToProps)(Home)
+export default connect(mapStateToProps)(ViewHashtags)
