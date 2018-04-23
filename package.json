@@ -7,7 +7,9 @@
     "test": "jest"
   },
   "dependencies": {
+    "autolinker": "^1.6.2",
     "axios": "^0.17.1",
+    "immutability-helper": "^2.6.6",
     "impagination": "^1.0.0-alpha.3",
     "native-base": "^2.3.9",
     "prop-types": "^15.6.1",

@@ -1,148 +1,85 @@
 import React, {Component} from 'react'
-import {ActivityIndicator, View} from "react-native";
+import {ListView, View} from "react-native";
 import {connect} from "react-redux";
+import update from 'immutability-helper';
+
+
+import axios from '../../../Services/Services';
 import TweetDetails from "./TweetDetails";
-import Dataset from "impagination";
-import {Content} from "native-base/dist/src/basic/Content";
+import Footer from './Footer'
 
 class Home extends Component {
 
-    setCurrentReadOffset = (event) => {
-        // Log the current scroll position in the list in pixels
-        console.log(event.nativeEvent.contentOffset.y);
+    _fetchData = () => {
+        axios.defaults.headers.common['Authorization'] = 'Bearer ' + this.props.access_token;
+        console.log(axios.defaults.headers.common['Authorization']);
 
-        let itemHeight = 402;
-        let currentOffset = Math.floor(event.nativeEvent.contentOffset.y);
-        let currentItemIndex = Math.ceil(currentOffset / itemHeight);
+        let from = this.state.from;
+        let size = this.state.size;
+        axios.get('/share/feed?from=' + from + '&size=' + size)
+            .then(response => {
 
-        this.state.dataset.setReadOffset(currentItemIndex);
+                if (this.state.tweets.length === 0) {
+                    this.setState({
+                        isRefreshing: true,
+                        tweets: response.data.items.hits,
+                        dataSource: this.state.dataSource.cloneWithRows(response.data.items.hits),
+                        isRefreshing: false,
+                        from: from + size,
+                        size: size
+                    })
+                }
 
+                else {
+                    let tweets = this.state.tweets;
+                    let newTweets = update(tweets, {$push: response.data.items.hits});
+
+                    this.setState({
+                        isRefreshing: true,
+                        tweets: newTweets,
+                        dataSource: this.state.dataSource.cloneWithRows(newTweets),
+                        isRefreshing: false,
+                        from: from + size,
+                        size: size
+                    });
+                    console.log(newTweets)
+                }
+
+            })
+            .catch(error => {
+                console.log(error);
+            })
     };
-
-    // setupImpagination() {
-    //     let token = 'Bearer ' + this.props.access_token;
-    //         let dataset = new Dataset({
-    //
-    //             pageSize: 10,
-    //
-    //             observe: (datasetState) => {
-    //                 this.setState({
-    //                     datasetState: datasetState});
-    //             },
-    //
-    //         fetch(pageOffset) {
-    //                 let url = 'https://api-test.yolobe.com/api1/share/feed?from='+ pageOffset +'&size=10'
-    //                 console.log(url)
-    //             return fetch(url,{
-    //                 method: "GET",
-    //                 headers: {
-    //                     'Accept': 'application/json',
-    //                     'content-type': 'application/json',
-    //                     'Authorization': token
-    //                 },
-    //             })
-    //                 .then(response => response.data)
-    //                 .catch((error) => {
-    //                     console.error(error);
-    //                 });
-    //         }
-    //     });
-    //
-    //     dataset.setReadOffset(0);
-    //     this.setState({dataset:dataset});
-    //         console.log(this.state)
-    // }
+    _renderRow = (tweet) => {
+        return (
+            <TweetDetails key={Math.random()} tweetDetails={tweet}/>
+        )
+    };
 
     constructor(props) {
         super(props);
 
         this.state = {
-            dataset: null,
-            datasetState: null,
+            tweets: [],
+            dataSource: new ListView.DataSource({
+                rowHasChanged: (row1, row2) => row1 !== row2
+            }),
+            // Used for RefreshControl
+            isRefreshing: false,
+            from: 0,
+            size: 9
         };
     }
 
-    setupImpagination() {
-        let token = 'Bearer ' + this.props.access_token;
-
-        let dataset = new Dataset({
-            pageSize: 10,
-
-            observe: (datasetState) => {
-                this.setState({datasetState});
-            },
-
-            // Where to fetch the data from.
-            fetch(pageOffset, pageSize, stats) {
-                let url = 'https://api-test.yolobe.com/api1/share/feed?from=' + Number(pageOffset) + '&size=10';
-                console.log(url);
-                return fetch(url, {
-                    method: "GET",
-                    headers: {
-                        'Accept': 'application/json',
-                        'content-type': 'application/json',
-                        'Authorization': token
-                    },
-
-                })
-                    .then(response => response.json().then(data => data.items.hits))
-                    .catch((error) => {
-                        console.error(error);
-                    });
-            }
-        });
-
-        dataset.setReadOffset(0);
-        this.setState({dataset});
-    }
-
     componentWillMount() {
-        // axios.defaults.headers.common['Authorization'] = 'Bearer ' + this.props.access_token;
-        //
-        // axios.get('/share/feed?from=0&size=10')
-        //     .then(response => {
-        //         this.setState({
-        //             tweets: response.data.items.hits
-        //         })
-        //
-        //         console.log(this.state.tweets[0])
-        //     })
-        //     .catch(error => {
-        //         console.log(error);
-        //     })
-
-        this.setupImpagination();
+        this._fetchData()
     }
-
-    // renderTweets() {
-    //     return this.state.datasetState.map(record => {
-    //         console.log(record)
-    //
-    //             if (!record.isSettled) {
-    //                 return <ActivityIndicator key={Math.random()} size="large" color="#0000ff" style={{opacity: 1.0}}
-    //                                           animating={true}/>
-    //             }
-    //             return <Text>hasvdhsavdasndsa</Text>
-    //     }
-    //
-    //     )
-    // }
 
     render() {
         return (
             <View style={{flex: 1, justifyContent: 'center', backgroundColor: '#fff', alignItems: 'center'}}>
-                <Content scrollEventThrottle={300} onScroll={this.setCurrentReadOffset}>
-                    {this.state.datasetState.map(record => {
-                        if (!record.isSettled) {
-                            return <ActivityIndicator key={Math.random()} size="large" color="#0000ff"
-                                                      style={{opacity: 1.0}}
-                                                      animating={true}/>
-                        }
-                        console.log(record);
-                        return <TweetDetails key={Math.random()} tweetDetails={record.content}/>
-
-                    })}
-                </Content>
+                <ListView dataSource={this.state.dataSource} renderRow={this._renderRow}
+                          renderFooter={() => <Footer fetchData={this._fetchData.bind(this)}/>}/>
             </View>
         )
     }
