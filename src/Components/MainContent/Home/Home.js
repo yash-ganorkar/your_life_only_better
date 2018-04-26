@@ -1,5 +1,5 @@
 import React, {Component} from 'react'
-import {ListView, View} from "react-native";
+import {ListView, RefreshControl, Text, View} from "react-native";
 import {connect} from "react-redux";
 import update from 'immutability-helper';
 
@@ -10,6 +10,32 @@ import Footer from './Footer'
 
 class Home extends Component {
 
+    static navigationOptions = ({navigation}) => {
+        return {
+            headerRight: <Text style={{color: 'white', paddingRight: 20}} onPress={() => {
+                navigation.navigate('Tweet', {animated: true, animationType: 'fade', title: 'New Share'})
+            }}>New Tweet</Text>
+        }
+    };
+    getInitialState = () => {
+        const initialState = {
+            tweets: [],
+            dataSource: new ListView.DataSource({
+                rowHasChanged: (row1, row2) => row1 !== row2
+            }),
+            // Used for RefreshControl
+            isRefreshing: false,
+            from: 0,
+            size: 9
+        };
+        return initialState;
+    };
+    _onRefresh = () => {
+        this.state = this.getInitialState();
+        this._fetchData('onpull');
+    };
+
+
     _navigate = (match) => {
         console.log(match.matchedText);
 
@@ -19,7 +45,7 @@ class Home extends Component {
             this.props.navigation.navigate('ViewHashtags', {hashtag: match.matchedText})
     };
 
-    _fetchData = () => {
+    _fetchData = (type) => {
         axios.defaults.headers.common['Authorization'] = 'Bearer ' + this.props.access_token;
         console.log(axios.defaults.headers.common['Authorization']);
 
@@ -28,7 +54,17 @@ class Home extends Component {
         axios.get('/share/feed?from=' + from + '&size=' + size)
             .then(response => {
 
-                if (this.state.tweets.length === 0) {
+                if (type === 'onpull') {
+                    this.setState({
+                        isRefreshing: true,
+                        tweets: response.data.items.hits,
+                        dataSource: this.state.dataSource.cloneWithRows(response.data.items.hits),
+                        isRefreshing: false,
+                        from: from + size,
+                        size: size
+                    })
+                }
+                else if (type === 'onload') {
                     this.setState({
                         isRefreshing: true,
                         tweets: response.data.items.hits,
@@ -39,7 +75,7 @@ class Home extends Component {
                     })
                 }
 
-                else {
+                else if (type === 'onloadclicked') {
                     let tweets = this.state.tweets;
                     let newTweets = update(tweets, {$push: response.data.items.hits});
 
@@ -68,27 +104,26 @@ class Home extends Component {
     constructor(props) {
         super(props);
 
-        this.state = {
-            tweets: [],
-            dataSource: new ListView.DataSource({
-                rowHasChanged: (row1, row2) => row1 !== row2
-            }),
-            // Used for RefreshControl
-            isRefreshing: false,
-            from: 0,
-            size: 9
-        };
+        this.state = this.getInitialState()
     }
 
     componentWillMount() {
-        this._fetchData()
+        this._fetchData('onload');
     }
 
     render() {
         return (
-            <View style={{flex: 1, justifyContent: 'center', backgroundColor: '#fff', alignItems: 'center'}}>
-                <ListView dataSource={this.state.dataSource} renderRow={this._renderRow}
-                          renderFooter={() => <Footer fetchData={this._fetchData.bind(this)}/>}/>
+            <View style={{flex: 1}}>
+                <View style={{flex: 1, justifyContent: 'center', backgroundColor: '#fff', alignItems: 'center'}}>
+                    <ListView dataSource={this.state.dataSource} renderRow={this._renderRow}
+                              renderFooter={() => <Footer fetchData={this._fetchData.bind(this, 'onloadclicked')}/>}
+                              refreshControl={
+                                  <RefreshControl
+                                      refreshing={this.state.isRefreshing}
+                                      onRefresh={this._onRefresh.bind(this)}
+                                  />
+                              }/>
+                </View>
             </View>
         )
     }

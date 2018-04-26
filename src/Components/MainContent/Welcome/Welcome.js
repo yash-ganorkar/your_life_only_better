@@ -11,6 +11,7 @@ import {Provider} from "react-redux";
 import store from "../../../store";
 import ViewMention from "../Home/ViewMention";
 import ViewHashtags from "../Home/ViewHashtags";
+import Tweet from "../Home/Tweet";
 
 
 const DrawerStack = DrawerNavigator({
@@ -23,7 +24,8 @@ const DrawerStack = DrawerNavigator({
 const DrawerNavigation = StackNavigator({
     DrawerStack: {screen: DrawerStack},
     ViewMention: {screen: ViewMention},
-    ViewHashtags: {screen: ViewHashtags}
+    ViewHashtags: {screen: ViewHashtags},
+    Tweet: {screen: Tweet}
 }, {
     headerMode: 'float',
     navigationOptions: ({navigation}) => ({

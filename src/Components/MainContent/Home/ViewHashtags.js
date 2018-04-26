@@ -49,9 +49,9 @@ class ViewHashtags extends Component {
         let from = this.state.from;
         let size = this.state.size;
 
-        console.log(this.props.navigation.state.params.hashtag);
+        let searchTerm = this.props.navigation.state.params.hashtag.split('#');
 
-        axios.get('/share/search?from=' + from + '&size=' + size + '&term=test')
+        axios.get('/share/search?from=' + from + '&size=' + size + '&term=' + searchTerm[1])
             .then(response => {
 
                 if (this.state.tweets.length === 0) {
