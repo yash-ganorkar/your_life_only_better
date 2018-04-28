@@ -12,6 +12,7 @@ import store from "../../../store";
 import ViewMention from "../Home/ViewMention";
 import ViewHashtags from "../Home/ViewHashtags";
 import Tweet from "../Home/Tweet";
+import CameraOption from "../Home/CameraOption";
 
 
 const DrawerStack = DrawerNavigator({
@@ -25,7 +26,8 @@ const DrawerNavigation = StackNavigator({
     DrawerStack: {screen: DrawerStack},
     ViewMention: {screen: ViewMention},
     ViewHashtags: {screen: ViewHashtags},
-    Tweet: {screen: Tweet}
+    Tweet: {screen: Tweet},
+    CameraOption: {screen: CameraOption}
 }, {
     headerMode: 'float',
     navigationOptions: ({navigation}) => ({
