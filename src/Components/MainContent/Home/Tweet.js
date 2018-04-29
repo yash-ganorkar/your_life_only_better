@@ -2,36 +2,36 @@ import React, {Component} from 'react'
 import {
     Alert,
     Animated,
-    Dimensions,
+    Button,
     Image,
     Keyboard,
     PixelRatio,
     StyleSheet,
+    Text,
     TextInput,
     TouchableOpacity,
     View
 } from 'react-native'
 import axios from "../../../Services/Services";
-import Icon from 'react-native-vector-icons/Ionicons';
 import ImagePicker from "react-native-image-picker";
-
+import ImgToBase64 from 'react-native-image-base64';
 
 class Tweet extends Component {
 
 
-    // static navigationOptions = ({navigation}) => {
-    //     console.log(navigation);
-    //     return {
-    //         headerLeft: <View style={{flex: 1, justifyContent: 'center'}}>
-    //             <Text style={{color: 'white', paddingLeft: 20, marginTop: 5}} onPress={() => {
-    //                 navigation.goBack()
-    //             }}>Back</Text>
-    //         </View>,
-    //         headerTitle: <View style={{flex: 1, justifyContent: 'center'}}>
-    //             <Text style={{color: 'white'}}>{navigation.state.params.title}</Text>
-    //         </View>
-    //     }
-    // };
+    static navigationOptions = ({navigation}) => {
+        console.log(navigation);
+        return {
+            headerLeft: <View style={{flex: 1, justifyContent: 'center'}}>
+                <Text style={{color: 'white', paddingLeft: 20, marginTop: 5}} onPress={() => {
+                    navigation.goBack()
+                }}>Back</Text>
+            </View>,
+            headerTitle: <View style={{flex: 1, justifyContent: 'center'}}>
+                <Text style={{color: 'white'}}>{navigation.state.params.title}</Text>
+            </View>
+        }
+    };
     keyboardWillShow = (event) => {
         console.log("keyboardWillShow");
         Animated.parallel([
@@ -78,8 +78,10 @@ class Tweet extends Component {
 
         this.state = {
             message: '',
-            ImageSource: []
-        };
+            ImageSource: [],
+            Image64Base: []
+        }
+        ;
 
         this.keyboardHeight = new Animated.Value(0);
     }
@@ -109,10 +111,11 @@ class Tweet extends Component {
             else {
                 let source = {uri: response.uri};
 
-                // You can also display the image using data:
-                // let source = { uri: 'data:image/jpeg;base64,' + response.data };
+                //You can also display the image using data:
+                //let source = { uri: 'data:image/jpeg;base64,' + response.data };
 
                 let imageSource = this.state.ImageSource;
+                let image64Base = this.state.Image64Base;
 
                 if (imageSource.length === 0) {
                     imageSource.push(source);
@@ -121,6 +124,17 @@ class Tweet extends Component {
                         ImageSource: imageSource
 
                     });
+
+                    ImgToBase64.getBase64String(response.uri)
+                        .then(base64String => {
+                            console.log(base64String);
+                            let image64 = {id: 0, imageBase64: base64String};
+                            image64Base.push(image64);
+                            this.setState({
+                                Image64Base: image64Base
+                            });
+                            console.log("state -> ", this.state)
+                        }).catch(err => console.log((err)));
                 }
 
                 else if (imageSource.includes(source)) {
@@ -129,14 +143,22 @@ class Tweet extends Component {
                 else {
                     imageSource.push(source);
                     this.setState({
-
                         ImageSource: imageSource
-
                     });
 
-                }
+                    let size = imageSource.length;
 
-                console.log('image -> ', this.state);
+                    ImgToBase64.getBase64String(response.uri)
+                        .then(base64String => {
+                            console.log(base64String);
+                            let image64 = {id: size - 1, imageBase64: base64String};
+                            image64Base.push(image64);
+                            this.setState({
+                                Image64Base: image64Base
+                            });
+                            console.log("state -> ", this.state)
+                        }).catch(err => console.log((err)));
+                }
             }
         });
     }
@@ -175,24 +197,6 @@ class Tweet extends Component {
                         onSubmitEditing={this._submit}
                         blurOnSubmit={true}
                     />
-                    <View style={{
-                        flex: 0.1,
-                        backgroundColor: 'black',
-                        justifyContent: 'flex-start',
-                        alignItems: 'flex-end',
-                        flexDirection: 'row'
-                    }}>
-                        <View style={{justifyContent: 'flex-start', marginLeft: 30}}>
-                            <TouchableOpacity onPress={this.selectPhotoTapped.bind(this)}>
-                                <Icon name="ios-camera" size={50} color="#4F8EF7"/>
-                            </TouchableOpacity>
-                        </View>
-                        {/*<View style={{justifyContent:'flex-start', marginLeft: 30}}>*/}
-                        {/*<TouchableOpacity onPress={this.galleryClicked} style={{paddingBottom:15}}>*/}
-                        {/*<FontAwesome name="photo" size={30} color="#4F8EF7"/>*/}
-                        {/*</TouchableOpacity>*/}
-                        {/*</View>*/}
-                    </View>
                 </View>
         }
         else {
@@ -237,25 +241,15 @@ class Tweet extends Component {
                                 this.state.ImageSource.map((url, i) => {
                                     {
                                         return (
-                                            <Image key={i} style={styles.ImageContainer} source={{uri: url.uri}}/>
+                                            <View>
+                                                <Image key={i} style={styles.ImageContainer} source={{uri: url.uri}}/>
+                                                <Button title="Remove"/>
+                                            </View>
                                         )
                                     }
                                 })
                             }
                         </Animated.ScrollView>
-                    </View>
-                    <View style={{
-                        flex: 0.1,
-                        backgroundColor: 'black',
-                        justifyContent: 'flex-start',
-                        alignItems: 'flex-end',
-                        flexDirection: 'row'
-                    }}>
-                        <View style={{justifyContent: 'flex-start', marginLeft: 30}}>
-                            <TouchableOpacity onPress={this.selectPhotoTapped.bind(this)}>
-                                <Icon name="ios-camera" size={50} color="#4F8EF7"/>
-                            </TouchableOpacity>
-                        </View>
                     </View>
                 </View>
         }
@@ -263,6 +257,19 @@ class Tweet extends Component {
         return (
             <Animated.View style={[styles.container, {paddingBottom: this.keyboardHeight}]}>
                 {view}
+                <View style={{
+                    flex: 0.08,
+                    backgroundColor: 'rgba(255,255,255,1)',
+                    justifyContent: 'flex-start',
+                    alignItems: 'center',
+                    flexDirection: 'row'
+                }}>
+                    <View style={{justifyContent: 'flex-start', marginLeft: 30}}>
+                        <TouchableOpacity onPress={this.selectPhotoTapped.bind(this)}>
+                            <Text>Remove</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
             </Animated.View>
         )
     }
@@ -304,8 +311,8 @@ const styles = StyleSheet.create({
     },
     ImageContainer: {
         flex: 1,
-        margin: 20,
-        borderRadius: 10,
+        marginTop: 20,
+        marginLeft: 20,
         width: 200,
         height: 200,
         borderColor: '#9B9B9B',
@@ -318,45 +325,7 @@ const styles = StyleSheet.create({
 });
 
 const xOffset = new Animated.Value(0);
-const SCREEN_WIDTH = Dimensions.get("window").width;
 
-const transitionAnimation = index => {
-    return {
-        transform: [
-            {perspective: 800},
-            {
-                scale: xOffset.interpolate({
-                    inputRange: [
-                        (index - 1) * SCREEN_WIDTH,
-                        index * SCREEN_WIDTH,
-                        (index + 1) * SCREEN_WIDTH
-                    ],
-                    outputRange: [0.25, 1, 0.25]
-                })
-            },
-            {
-                rotateX: xOffset.interpolate({
-                    inputRange: [
-                        (index - 1) * SCREEN_WIDTH,
-                        index * SCREEN_WIDTH,
-                        (index + 1) * SCREEN_WIDTH
-                    ],
-                    outputRange: ["45deg", "0deg", "45deg"]
-                })
-            },
-            {
-                rotateY: xOffset.interpolate({
-                    inputRange: [
-                        (index - 1) * SCREEN_WIDTH,
-                        index * SCREEN_WIDTH,
-                        (index + 1) * SCREEN_WIDTH
-                    ],
-                    outputRange: ["-45deg", "0deg", "45deg"]
-                })
-            }
-        ]
-    };
-};
 
 // const mapStateToProps = (state) => {
 //     return {

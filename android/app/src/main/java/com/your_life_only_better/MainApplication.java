@@ -3,10 +3,10 @@ package com.your_life_only_better;
 import android.app.Application;
 
 import com.facebook.react.ReactApplication;
+import com.reactnativenavigation.bridge.NavigationReactPackage;
 import com.imagepicker.ImagePickerPackage;
-import org.reactnative.camera.RNCameraPackage;
-import com.reactnativenavigation.NavigationReactPackage;
-import com.oblador.vectoricons.VectorIconsPackage;
+import fr.snapp.imagebase64.RNImgToBase64Package;
+
 import com.RNFetchBlob.RNFetchBlobPackage;
 import com.facebook.react.ReactNativeHost;
 import com.facebook.react.ReactPackage;
@@ -28,10 +28,9 @@ public class MainApplication extends Application implements ReactApplication {
     protected List<ReactPackage> getPackages() {
       return Arrays.<ReactPackage>asList(
           new MainReactPackage(),
-            new ImagePickerPackage(),
-            new RNCameraPackage(),
             new NavigationReactPackage(),
-            new VectorIconsPackage(),
+            new ImagePickerPackage(),
+            new RNImgToBase64Package(),
             new RNFetchBlobPackage()
       );
     }

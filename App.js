@@ -3,10 +3,10 @@ import {StatusBar, StyleSheet, View} from 'react-native'
 import {StackNavigator} from 'react-navigation'
 import Tutorials from "./src/Components/MainContent/Tutorials";
 import Register from "./src/Components/Register/Register";
-import Tweet from "./src/Components/MainContent/Home/Tweet";
+import Login from "./src/Components/Login/Login";
 
 const NavigationApp = StackNavigator({
-    Tweet: {screen: Tweet},
+    Login: {screen: Login},
     Register: {screen: Register},
     Tutorials: {screen: Tutorials},
 }, {
