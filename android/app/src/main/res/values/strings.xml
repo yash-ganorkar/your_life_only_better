@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">your_life_only_better</string>
+    <string name="facebook_app_id">1808327229482344</string>
+    <string name="fb_login_protocol_scheme">fb1808327229482344</string>
 </resources>

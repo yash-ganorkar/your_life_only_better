@@ -1,20 +1,20 @@
 import React, {Component} from 'react'
 import {ActivityIndicator, Alert, StyleSheet, Text, TextInput, TouchableOpacity, View} from 'react-native'
 import {KeyboardAwareScrollView} from "react-native-keyboard-aware-scroll-view";
-import axios from "../../../Services/Services";
+import {instance} from "../../../Services/Services";
 
 class Form extends Component {
 
     performRegister = () => {
 
 
-        let editable = false
-        let loading = true
+        let editable = false;
+        let loading = true;
 
         this.setState({
             loading: loading,
             editable: editable
-        })
+        });
 
 
         let data = {
@@ -24,9 +24,9 @@ class Form extends Component {
             address1: "243 W Cermak Road",
             address2: "Chicago, IL",
             fullName: this.state.name
-        }
+        };
 
-        axios.post('/anon/register', data)
+        instance.post('/anon/register', data)
             .then(response => {
                 console.log(response.data);
                 this.setState({
@@ -54,7 +54,7 @@ class Form extends Component {
             })
 
 
-    }
+    };
 
     constructor() {
         super();

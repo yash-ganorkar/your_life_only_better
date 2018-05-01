@@ -1,8 +1,11 @@
 import React, {Component} from 'react'
 import {Platform, StyleSheet, Text, TouchableOpacity, View} from 'react-native'
+
 import Logo from "../Login/Logo/Logo";
 import Form from "./Form/Form";
 import Footer from "../Footer/Footer";
+import store from '../../store/index'
+
 
 class Login extends Component {
     static navigationOptions = {
@@ -22,7 +25,7 @@ class Login extends Component {
                     <Logo/>
                 </View>
                 <View style={{backgroundColor: 'white', flex: 2, paddingTop: 20}}>
-                    <Form goToTutorials={this.goToTutotials}/>
+                    <Form store={store} goToTutorials={this.goToTutotials}/>
                 </View>
                 <View style={{backgroundColor: 'white', flex: 0.5, paddingTop: 20}}>
                     <View style={styles.container}>

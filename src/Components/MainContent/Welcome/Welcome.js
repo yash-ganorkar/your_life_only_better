@@ -1,30 +1,42 @@
 import React, {Component} from 'react'
 import {DrawerNavigator, StackNavigator} from "react-navigation";
+import {BackHandler, Platform, StatusBar, ToastAndroid, View} from "react-native";
+
+
 import Home from "../Home/Home";
 import Conversations from "../Conversations/Conversations";
 import Settings from "../Settings/Settings";
 import Management from "../Management/Management";
-import {BackHandler, Platform, StatusBar, Text, ToastAndroid, View} from "react-native";
+import {Provider} from "react-redux";
+import store from "../../../store";
+import ViewMention from "../Home/ViewMention";
+import ViewHashtags from "../Home/ViewHashtags";
+import Tweet from "../Home/Tweet";
+import Icon from "react-native-ionicons";
+import NewConversation from "../Conversations/NewConversation";
 
 
 const DrawerStack = DrawerNavigator({
     Home: {screen: Home},
     Conversations: {screen: Conversations},
     Settings: {screen: Settings},
-    Management: {screen: Management},
-})
+    Management: {screen: Management}
+});
 
 const DrawerNavigation = StackNavigator({
-    DrawerStack: {screen: DrawerStack}
+    DrawerStack: {screen: DrawerStack},
+    ViewMention: {screen: ViewMention},
+    ViewHashtags: {screen: ViewHashtags},
+    Tweet: {screen: Tweet},
+    NewConversation: {screen: NewConversation}
 }, {
     headerMode: 'float',
     navigationOptions: ({navigation}) => ({
         headerStyle: {backgroundColor: '#800080'},
-        headerLeft: <Text style={{color: 'white', paddingLeft: 20}} onPress={() => {
-            navigation.navigate('DrawerOpen')
-        }}>Menu</Text>
+        headerLeft: <Icon name="menu" size={30}
+                          color="#fff" style={{marginLeft: 10}} onPress={() => navigation.navigate('DrawerOpen')}/>
     })
-})
+});
 
 class Welcome extends Component {
 
@@ -45,12 +57,15 @@ class Welcome extends Component {
 
     render() {
         return (
-            <View style={{flex: 1}}>
-                <StatusBar barStyle="light-content" hidden={false}/>
-                <DrawerNavigation/>
-            </View>
+            <Provider store={store}>
+                <View style={{flex: 1}}>
+                    <StatusBar barStyle="light-content" hidden={false}/>
+                    <DrawerNavigation/>
+                </View>
+            </Provider>
         )
     }
 }
+
 
 export default Welcome

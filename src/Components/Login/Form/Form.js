@@ -1,64 +1,68 @@
 import React, {Component} from 'react'
-import {ActivityIndicator, Alert, StyleSheet, Text, TextInput, TouchableOpacity, View} from 'react-native'
+import {Alert, StyleSheet, Text, TextInput, TouchableOpacity, View} from 'react-native'
 import {KeyboardAwareScrollView} from "react-native-keyboard-aware-scroll-view";
 
-import axios from '../../../Services/Services'
+import {instance} from '../../../Services/Services'
+import {connect} from 'react-redux'
+import FacebookLogin from "../FacebookLogin";
+import Loader from "../../ActivityIndicator/Loader";
+
 
 class Form extends Component {
 
     performLogin = () => {
-
-        let editable = false
-        let loading = true
-
+        const {loading, editable} = this.state;
         this.setState({
-            loading: loading,
-            editable: editable
-        })
+            loading: true,
+            editable: !editable
+        });
+
+        console.log(this.props.username);
+        console.log(this.props.password);
 
         let data = {
-            username: this.state.username,
-            password: this.state.password
-        }
+            username: this.props.username,
+            password: this.props.password
+        };
 
-        axios.post('/login', data)
+        instance.post('/login', data)
             .then(response => {
-                console.log(response.data);
-                this.setState({
-                    username: response.data.username,
-                    access_token: response.data.access_token,
-                    loading: !loading,
-                    editable: !editable
-                });
+
+                this.props.onLoginSuccessful(response.data.username, response.data.access_token);
 
                 Alert.alert("Yolibe", "Login Successful",
-                    [{text: 'OK', onPress: () => this.props.goToTutorials()}], {cancelable: false})
-
-
+                    [{
+                        text: 'OK', onPress: () => {
+                            this.setState({
+                                loading: false,
+                                editable: editable
+                            });
+                            this.props.goToTutorials()
+                        }
+                    }], {cancelable: false})
             })
             .catch(error => {
                 console.log(error);
-
-                this.setState({
-                    loading: !loading,
-                    editable: !editable
-                });
-
                 Alert.alert("Yolibe", "Something went wrong!",
-                    [{text: 'OK', onPress: () => console.log('OK Pressed')}], {cancelable: false})
+                    [{
+                        text: 'OK', onPress: () => {
+                            this.setState({
+                                loading: false,
+                                editable: editable
+                            });
+                            console.log('OK Pressed')
+                        }
+                    }], {cancelable: false})
 
 
             })
 
 
-    }
+    };
 
-    constructor() {
-        super();
-
+    constructor(props) {
+        super(props);
         this.state = {
-            username: "",
-            password: "",
             loading: false,
             editable: true
         }
@@ -82,7 +86,7 @@ class Form extends Component {
                                onSubmitEditing={() => this.passwordInput.focus()}
                                autoCorrect={false}
                                editable={this.state.editable}
-                               onChangeText={(username) => this.setState({username: username})}
+                               onChangeText={(username) => this.props.onUsernameChanged(username)}
                                placeholderTextColor="#fff"/>
                     <TextInput underlineColorAndroid="transparent"
                                style={styles.inputBox}
@@ -92,20 +96,46 @@ class Form extends Component {
                                returnKeyType="go"
                                editable={this.state.editable}
                                autoCapitalize="none"
-                               onChangeText={(password) => this.setState({password: password})}
+                               onChangeText={(password) => this.props.onPasswordChanged(password)}
                                autoCorrect={false}
                                placeholderTextColor="#fff"/>
 
                     <TouchableOpacity onPress={this.performLogin} style={styles.button}>
                         <Text style={styles.buttonText}>Login</Text>
                     </TouchableOpacity>
-                    <ActivityIndicator size="large" color="#0000ff" style={{opacity: this.state.loading ? 1.0 : 0.0}}
-                                       animating={true}/>
+                    <FacebookLogin/>
+                    <Loader
+                        loading={this.state.loading}/>
                 </KeyboardAwareScrollView>
             </View>
         );
     }
 }
+
+const mapStateToProps = (state) => {
+    return {
+        username: state.username,
+        password: state.password,
+        access_token: state.access_token
+    }
+};
+
+const mapDispatchToProps = (dispatch) => {
+    return {
+        onUsernameChanged: (username) => {
+            const action = {type: 'USERNAMECHANGED', text: username};
+            dispatch(action)
+        },
+        onPasswordChanged: (password) => {
+            const action = {type: 'PASSWORDCHANGED', text: password};
+            dispatch(action)
+        },
+        onLoginSuccessful: (username, access_token) => {
+            const action = {type: 'LOGINSUCCESSFUL', username: username, access_token: access_token};
+            dispatch(action)
+        }
+    }
+};
 
 const styles = StyleSheet.create({
     container: {
@@ -149,4 +179,5 @@ const styles = StyleSheet.create({
     }
 });
 
-export default Form
+
+export default connect(mapStateToProps, mapDispatchToProps)(Form)
