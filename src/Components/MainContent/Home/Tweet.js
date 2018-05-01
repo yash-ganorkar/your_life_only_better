@@ -15,12 +15,11 @@ import {
 } from 'react-native'
 
 import querystring from 'querystring'
-
-import Spinner from 'react-native-loading-spinner-overlay';
 import {instance, instance2} from "../../../Services/Services";
 import ImagePicker from "react-native-image-picker";
 import Icon from "react-native-ionicons";
 import {connect} from "react-redux";
+import Loader from "../../ActivityIndicator/Loader";
 
 class Tweet extends Component {
 
@@ -32,8 +31,11 @@ class Tweet extends Component {
             headerTitle: <View style={{flex: 1, justifyContent: 'center'}}>
                 <Text style={{color: 'white'}}>{navigation.state.params.title}</Text>
             </View>,
-            headerRight: <Icon name="send" size={30}
-                               color="#fff" style={{marginRight: 10}} onPress={navigation.state.params.share}/>
+            headerRight: <TouchableHighlight onPress={navigation.state.params.share}
+                                             disabled={!navigation.state.params.animated}>
+                <Icon name="send" size={30}
+                      color="#fff" style={{marginRight: 10}}/>
+            </TouchableHighlight>
         }
     };
 
@@ -64,13 +66,20 @@ class Tweet extends Component {
         })
     };
     _submit = () => {
+
         instance2.defaults.headers.common['Authorization'] = 'Bearer ' + this.props.access_token;
         instance.defaults.headers.common['Authorization'] = 'Bearer ' + this.props.access_token;
 
+        this.props.navigation.setParams({
+            animated: false
+        });
+
+        this.setState({
+            loading: true
+        });
+
         if (this.state.message === '') {
-            this.setState({
-                loading: false
-            });
+
             Alert.alert("Yolibe", "Cannot share empty feed",
                 [{
                     text: 'OK', onPress: () => {
@@ -78,7 +87,11 @@ class Tweet extends Component {
                             loading: false
                         });
                     }
-                }], {cancelable: false})
+                }], {cancelable: false});
+
+            this.props.navigation.setParams({
+                animated: true
+            })
 
         }
         else if (this.state.ImageSource.length === 0) {
@@ -87,10 +100,10 @@ class Tweet extends Component {
                 media1: {},
                 field1: this.state.message
             };
+
             instance.post('/share/create', data)
                 .then(response => {
-
-                    Alert.alert("Yolibe", "Tweet Shared Successfully",
+                    Alert.alert("Yolibe", "Content Shared Successfully",
                         [{
                             text: 'OK', onPress: () => {
                                 this.setState({
@@ -98,18 +111,18 @@ class Tweet extends Component {
                                 });
                                 this.props.navigation.goBack()
                             }
-                        }], {cancelable: false})
+                        }], {cancelable: false});
                 })
                 .catch(error => {
-                    console.log(error);
                     Alert.alert("Yolibe", "Something went wrong!",
                         [{
                             text: 'OK', onPress: () => {
                                 this.setState({
                                     loading: false
                                 });
+                                this.props.navigation.goBack()
                             }
-                        }], {cancelable: false})
+                        }], {cancelable: false});
                 })
         }
         else {
@@ -137,10 +150,12 @@ class Tweet extends Component {
 
                     instance.post('/share/create', data)
                         .then(response => {
+
                             this.setState({
                                 loading: false
                             });
-                            Alert.alert("Yolibe", "Tweet Shared Successfully",
+
+                            Alert.alert("Yolibe", "Content Shared Successfully",
                                 [{
                                     text: 'OK', onPress: () => {
                                         this.setState({
@@ -148,11 +163,13 @@ class Tweet extends Component {
                                         });
                                         this.props.navigation.goBack()
                                     }
-                                }], {cancelable: false})
-                        })
+                                }], {cancelable: false});
                         })
                 .catch(error => {
-                    Alert.alert("Yolibe", "Something went wrong...",
+                    this.setState({
+                        loading: false
+                    });
+                    Alert.alert("Yolibe", "Something went wrong!",
                         [{
                             text: 'OK', onPress: () => {
                                 this.setState({
@@ -160,10 +177,14 @@ class Tweet extends Component {
                                 });
                                 this.props.navigation.goBack()
                             }
-                        }], {cancelable: false})
+                        }], {cancelable: false});
+                })
                 })
                 .catch(error => {
-                    Alert.alert("Yolibe", "Something went wrong...",
+                    this.setState({
+                        loading: false
+                    });
+                    Alert.alert("Yolibe", "Something went wrong!",
                         [{
                             text: 'OK', onPress: () => {
                                 this.setState({
@@ -171,7 +192,7 @@ class Tweet extends Component {
                                 });
                                 this.props.navigation.goBack()
                             }
-                        }], {cancelable: false})
+                        }], {cancelable: false});
                 })
         }
     };
@@ -288,6 +309,7 @@ class Tweet extends Component {
         let view;
         let footerView;
 
+
         if (this.state.ImageSource.length === 0) {
             view =
                 <View style={styles.container}>
@@ -384,7 +406,7 @@ class Tweet extends Component {
                 flex: 0.1,
                 backgroundColor: 'rgba(255,255,255,1)',
             }}>
-                <Button title="SHARE PHOTOS/VIDEO" onPress={this.selectPhotoTapped.bind(this)}/>
+                <Button title="Attach Media" onPress={this.selectPhotoTapped.bind(this)}/>
             </View>
         }
         else {
@@ -392,15 +414,17 @@ class Tweet extends Component {
                 flex: 0.08,
                 backgroundColor: 'rgba(255,255,255,1)'
             }}>
-                <Button title="SHARE PHOTOS/VIDEO" onPress={this.selectPhotoTapped.bind(this)}/>
+                <Button title="Attach Media" onPress={this.selectPhotoTapped.bind(this)}/>
             </View>
         }
+
 
         return (
             <Animated.View style={[styles.container, {paddingBottom: this.keyboardHeight}]}>
                 {view}
                 {footerView}
-                <Spinner visible={this.state.loading} textContent={"Loading..."} textStyle={{color: '#FFF'}}/>
+                <Loader
+                    loading={this.state.loading}/>
             </Animated.View>
         )
     }

@@ -8,6 +8,7 @@ import {instance} from '../../../Services/Services';
 import TweetDetails from "./TweetDetails";
 import Footer from './Footer'
 import Icon from "react-native-ionicons";
+import Loader from "../../ActivityIndicator/Loader";
 
 class Home extends Component {
 
@@ -123,6 +124,7 @@ class Home extends Component {
                 view = <Text>New Account? Share something to get things started :)</Text>
             }
             else {
+
                 view = <ListView dataSource={this.state.dataSource} renderRow={this._renderRow}
                                  renderFooter={() => <Footer fetchData={this._fetchData.bind(this, 'onloadclicked')}/>}
                                  refreshControl={
@@ -134,7 +136,8 @@ class Home extends Component {
             }
         }
         else {
-            view = <Text>Loading...</Text>
+            view = <Loader
+                loading={true}/>
         }
         return (
 

@@ -1,10 +1,11 @@
 import React, {Component} from 'react'
-import {ActivityIndicator, Alert, StyleSheet, Text, TextInput, TouchableOpacity, View} from 'react-native'
+import {Alert, StyleSheet, Text, TextInput, TouchableOpacity, View} from 'react-native'
 import {KeyboardAwareScrollView} from "react-native-keyboard-aware-scroll-view";
 
 import {instance} from '../../../Services/Services'
 import {connect} from 'react-redux'
 import FacebookLogin from "../FacebookLogin";
+import Loader from "../../ActivityIndicator/Loader";
 
 
 class Form extends Component {
@@ -12,7 +13,7 @@ class Form extends Component {
     performLogin = () => {
         const {loading, editable} = this.state;
         this.setState({
-            loading: !loading,
+            loading: true,
             editable: !editable
         });
 
@@ -28,23 +29,30 @@ class Form extends Component {
             .then(response => {
 
                 this.props.onLoginSuccessful(response.data.username, response.data.access_token);
-                this.setState({
-                    loading: loading,
-                    editable: editable
-                });
 
                 Alert.alert("Yolibe", "Login Successful",
-                    [{text: 'OK', onPress: () => this.props.goToTutorials()}], {cancelable: false})
+                    [{
+                        text: 'OK', onPress: () => {
+                            this.setState({
+                                loading: false,
+                                editable: editable
+                            });
+                            this.props.goToTutorials()
+                        }
+                    }], {cancelable: false})
             })
             .catch(error => {
                 console.log(error);
-                this.setState({
-                    loading: loading,
-                    editable: editable
-                });
-
                 Alert.alert("Yolibe", "Something went wrong!",
-                    [{text: 'OK', onPress: () => console.log('OK Pressed')}], {cancelable: false})
+                    [{
+                        text: 'OK', onPress: () => {
+                            this.setState({
+                                loading: false,
+                                editable: editable
+                            });
+                            console.log('OK Pressed')
+                        }
+                    }], {cancelable: false})
 
 
             })
@@ -96,8 +104,8 @@ class Form extends Component {
                         <Text style={styles.buttonText}>Login</Text>
                     </TouchableOpacity>
                     <FacebookLogin/>
-                    <ActivityIndicator size="large" color="#0000ff" style={{opacity: this.state.loading ? 1.0 : 0.0}}
-                                       animating={true}/>
+                    <Loader
+                        loading={this.state.loading}/>
                 </KeyboardAwareScrollView>
             </View>
         );
