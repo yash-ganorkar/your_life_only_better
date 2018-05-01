@@ -4,6 +4,7 @@ import {KeyboardAwareScrollView} from "react-native-keyboard-aware-scroll-view";
 
 import {instance} from '../../../Services/Services'
 import {connect} from 'react-redux'
+import FacebookLogin from "../FacebookLogin";
 
 
 class Form extends Component {
@@ -94,6 +95,7 @@ class Form extends Component {
                     <TouchableOpacity onPress={this.performLogin} style={styles.button}>
                         <Text style={styles.buttonText}>Login</Text>
                     </TouchableOpacity>
+                    <FacebookLogin/>
                     <ActivityIndicator size="large" color="#0000ff" style={{opacity: this.state.loading ? 1.0 : 0.0}}
                                        animating={true}/>
                 </KeyboardAwareScrollView>

@@ -119,14 +119,19 @@ class Home extends Component {
     render() {
         let view;
         if (this.state.isDataPresent) {
-            view = <ListView dataSource={this.state.dataSource} renderRow={this._renderRow}
-                              renderFooter={() => <Footer fetchData={this._fetchData.bind(this, 'onloadclicked')}/>}
-                              refreshControl={
-                                  <RefreshControl
-                                      refreshing={this.state.isRefreshing}
-                                      onRefresh={this._onRefresh.bind(this)}
-                                  />
-                              }/>
+            if (this.state.tweets.length === 0) {
+                view = <Text>New Account? Share something to get things started :)</Text>
+            }
+            else {
+                view = <ListView dataSource={this.state.dataSource} renderRow={this._renderRow}
+                                 renderFooter={() => <Footer fetchData={this._fetchData.bind(this, 'onloadclicked')}/>}
+                                 refreshControl={
+                                     <RefreshControl
+                                         refreshing={this.state.isRefreshing}
+                                         onRefresh={this._onRefresh.bind(this)}
+                                     />
+                                 }/>
+            }
         }
         else {
             view = <Text>Loading...</Text>

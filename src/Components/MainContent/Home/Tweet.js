@@ -66,9 +66,7 @@ class Tweet extends Component {
     _submit = () => {
         instance2.defaults.headers.common['Authorization'] = 'Bearer ' + this.props.access_token;
         instance.defaults.headers.common['Authorization'] = 'Bearer ' + this.props.access_token;
-        this.setState({
-            loading: true
-        });
+
         if (this.state.message === '') {
             this.setState({
                 loading: false
@@ -142,13 +140,39 @@ class Tweet extends Component {
                             this.setState({
                                 loading: false
                             });
-                            console.log(response)
+                            Alert.alert("Yolibe", "Tweet Shared Successfully",
+                                [{
+                                    text: 'OK', onPress: () => {
+                                        this.setState({
+                                            loading: false
+                                        });
+                                        this.props.navigation.goBack()
+                                    }
+                                }], {cancelable: false})
                         })
-                        .catch(error => console.log(error))
-
-                }).catch(error => {
-                console.log(error)
-            })
+                        })
+                .catch(error => {
+                    Alert.alert("Yolibe", "Something went wrong...",
+                        [{
+                            text: 'OK', onPress: () => {
+                                this.setState({
+                                    loading: false
+                                });
+                                this.props.navigation.goBack()
+                            }
+                        }], {cancelable: false})
+                })
+                .catch(error => {
+                    Alert.alert("Yolibe", "Something went wrong...",
+                        [{
+                            text: 'OK', onPress: () => {
+                                this.setState({
+                                    loading: false
+                                });
+                                this.props.navigation.goBack()
+                            }
+                        }], {cancelable: false})
+                })
         }
     };
     removePhoto = (key) => {
