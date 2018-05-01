@@ -1,6 +1,6 @@
 import React, {Component} from 'react'
 import {DrawerNavigator, StackNavigator} from "react-navigation";
-import {BackHandler, Platform, StatusBar, Text, ToastAndroid, View} from "react-native";
+import {BackHandler, Platform, StatusBar, ToastAndroid, View} from "react-native";
 
 
 import Home from "../Home/Home";
@@ -12,7 +12,8 @@ import store from "../../../store";
 import ViewMention from "../Home/ViewMention";
 import ViewHashtags from "../Home/ViewHashtags";
 import Tweet from "../Home/Tweet";
-import CameraOption from "../Home/CameraOption";
+import Icon from "react-native-ionicons";
+import NewConversation from "../Conversations/NewConversation";
 
 
 const DrawerStack = DrawerNavigator({
@@ -27,14 +28,13 @@ const DrawerNavigation = StackNavigator({
     ViewMention: {screen: ViewMention},
     ViewHashtags: {screen: ViewHashtags},
     Tweet: {screen: Tweet},
-    CameraOption: {screen: CameraOption}
+    NewConversation: {screen: NewConversation}
 }, {
     headerMode: 'float',
     navigationOptions: ({navigation}) => ({
         headerStyle: {backgroundColor: '#800080'},
-        headerLeft: <Text style={{color: 'white', paddingLeft: 20}} onPress={() => {
-            navigation.navigate('DrawerOpen')
-        }}>Menu</Text>
+        headerLeft: <Icon name="menu" size={30}
+                          color="#fff" style={{marginLeft: 10}} onPress={() => navigation.navigate('DrawerOpen')}/>
     })
 });
 

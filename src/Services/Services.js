@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-const instance = axios.create({
+export const instance = axios.create({
     baseURL: 'https://api-test.yolobe.com/api1',
     headers: {
         'Accept': 'application/json',
@@ -8,4 +8,10 @@ const instance = axios.create({
     }
 });
 
-export default instance
+export const instance2 = axios.create({
+    baseURL: 'https://api-test.yolobe.com/api1',
+    headers: {
+        'Accept': 'application/x-www-form-urlencoded;charset=UTF-8',
+        'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+    }
+});

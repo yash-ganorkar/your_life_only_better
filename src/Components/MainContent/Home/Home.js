@@ -4,17 +4,20 @@ import {connect} from "react-redux";
 import update from 'immutability-helper';
 
 
-import axios from '../../../Services/Services';
+import {instance} from '../../../Services/Services';
 import TweetDetails from "./TweetDetails";
 import Footer from './Footer'
+import Icon from "react-native-ionicons";
 
 class Home extends Component {
 
     static navigationOptions = ({navigation}) => {
         return {
-            headerRight: <Text style={{color: 'white', paddingRight: 20}} onPress={() => {
+            headerRight: <Icon name="create" size={30}
+                               color="#fff" style={{marginRight: 10}} onPress={() => {
                 navigation.navigate('Tweet', {animated: true, animationType: 'fade', title: 'New Share'})
-            }}>New Tweet</Text>
+            }}/>,
+            headerTitle: <Text style={{color: 'white', paddingRight: 20}}>Home</Text>
         }
     };
     getInitialState = () => {
@@ -26,7 +29,8 @@ class Home extends Component {
             // Used for RefreshControl
             isRefreshing: false,
             from: 0,
-            size: 9
+            size: 9,
+            isDataPresent: false
         };
         return initialState;
     };
@@ -46,12 +50,12 @@ class Home extends Component {
     };
 
     _fetchData = (type) => {
-        axios.defaults.headers.common['Authorization'] = 'Bearer ' + this.props.access_token;
-        console.log(axios.defaults.headers.common['Authorization']);
+        instance.defaults.headers.common['Authorization'] = 'Bearer ' + this.props.access_token;
+        console.log(instance.defaults.headers.common['Authorization']);
 
         let from = this.state.from;
         let size = this.state.size;
-        axios.get('/share/feed?from=' + from + '&size=' + size)
+        instance.get('/share/feed?from=' + from + '&size=' + size)
             .then(response => {
 
                 if (type === 'onpull') {
@@ -71,7 +75,8 @@ class Home extends Component {
                         dataSource: this.state.dataSource.cloneWithRows(response.data.items.hits),
                         isRefreshing: false,
                         from: from + size,
-                        size: size
+                        size: size,
+                        isDataPresent: true
                     })
                 }
 
@@ -112,10 +117,9 @@ class Home extends Component {
     }
 
     render() {
-        return (
-            <View style={{flex: 1}}>
-                <View style={{flex: 1, justifyContent: 'center', backgroundColor: '#fff', alignItems: 'center'}}>
-                    <ListView dataSource={this.state.dataSource} renderRow={this._renderRow}
+        let view;
+        if (this.state.isDataPresent) {
+            view = <ListView dataSource={this.state.dataSource} renderRow={this._renderRow}
                               renderFooter={() => <Footer fetchData={this._fetchData.bind(this, 'onloadclicked')}/>}
                               refreshControl={
                                   <RefreshControl
@@ -123,7 +127,14 @@ class Home extends Component {
                                       onRefresh={this._onRefresh.bind(this)}
                                   />
                               }/>
-                </View>
+        }
+        else {
+            view = <Text>Loading...</Text>
+        }
+        return (
+
+            <View style={{flex: 1, justifyContent: 'center', backgroundColor: '#fff', alignItems: 'center'}}>
+                {view}
             </View>
         )
     }

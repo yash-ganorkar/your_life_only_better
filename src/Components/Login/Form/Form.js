@@ -2,7 +2,7 @@ import React, {Component} from 'react'
 import {ActivityIndicator, Alert, StyleSheet, Text, TextInput, TouchableOpacity, View} from 'react-native'
 import {KeyboardAwareScrollView} from "react-native-keyboard-aware-scroll-view";
 
-import axios from '../../../Services/Services'
+import {instance} from '../../../Services/Services'
 import {connect} from 'react-redux'
 
 
@@ -15,18 +15,18 @@ class Form extends Component {
             editable: !editable
         });
 
-        console.log(this.props.username)
-        console.log(this.props.password)
+        console.log(this.props.username);
+        console.log(this.props.password);
 
         let data = {
             username: this.props.username,
             password: this.props.password
-        }
+        };
 
-        axios.post('/login', data)
+        instance.post('/login', data)
             .then(response => {
 
-                this.props.onLoginSuccessful(response.data.username, response.data.access_token)
+                this.props.onLoginSuccessful(response.data.username, response.data.access_token);
                 this.setState({
                     loading: loading,
                     editable: editable
@@ -49,7 +49,7 @@ class Form extends Component {
             })
 
 
-    }
+    };
 
     constructor(props) {
         super(props);
@@ -108,24 +108,24 @@ const mapStateToProps = (state) => {
         password: state.password,
         access_token: state.access_token
     }
-}
+};
 
 const mapDispatchToProps = (dispatch) => {
     return {
         onUsernameChanged: (username) => {
-            const action = {type: 'USERNAMECHANGED', text: username}
+            const action = {type: 'USERNAMECHANGED', text: username};
             dispatch(action)
         },
         onPasswordChanged: (password) => {
-            const action = {type: 'PASSWORDCHANGED', text: password}
+            const action = {type: 'PASSWORDCHANGED', text: password};
             dispatch(action)
         },
         onLoginSuccessful: (username, access_token) => {
-            const action = {type: 'LOGINSUCCESSFUL', username: username, access_token: access_token}
+            const action = {type: 'LOGINSUCCESSFUL', username: username, access_token: access_token};
             dispatch(action)
         }
     }
-}
+};
 
 const styles = StyleSheet.create({
     container: {

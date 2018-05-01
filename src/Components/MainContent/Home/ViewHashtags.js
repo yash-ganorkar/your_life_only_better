@@ -1,57 +1,85 @@
 import React, {Component} from 'react'
-import {ListView, StyleSheet, Text, TextInput, View} from 'react-native'
-import axios from "../../../Services/Services";
+import {Dimensions, ListView, Platform, StyleSheet, TextInput, View} from 'react-native'
+import {instance} from "../../../Services/Services";
 import update from "immutability-helper/index";
 import {connect} from "react-redux";
 import TweetDetails from "./TweetDetails";
 import Footer from './Footer'
+import Icon from "react-native-ionicons";
 
 class ViewHashtags extends Component {
 
     static navigationOptions = ({navigation}) => {
 
-        console.log(navigation.state);
+        const {width} = Dimensions.get('window');
+
+        let view;
+        if (Platform.OS === 'android') {
+            view = <TextInput underlineColorAndroid="transparent"
+                              style={{
+                                  marginLeft: 20,
+                                  width: width / 1.5,
+                                  height: 40,
+                                  fontSize: 16,
+                                  paddingHorizontal: 20,
+                                  backgroundColor: '#fff',
+                                  borderRadius: 5,
+                                  color: '#000'
+                              }}
+                              editable
+                              placeholder={navigation.state.params.hashtag}
+                              autoCapitalize="none"
+                              keyboardType="email-address"
+                              returnKeyType="search"
+                              onChangeText={(hashtag) => navigation.state.params.hashtag = hashtag}
+                              onSubmitEditing={navigation.state.params._submit}
+                              autoCorrect={false}
+                              placeholderTextColor="#000"/>
+
+        }
+        else {
+            view = <TextInput underlineColorAndroid="transparent"
+                              style={{
+                                  marginLeft: 20,
+                                  width: width / 1.5,
+                                  height: 30,
+                                  fontSize: 16,
+                                  paddingHorizontal: 20,
+                                  backgroundColor: '#fff',
+                                  borderRadius: 5,
+                                  color: '#000'
+                              }}
+                              editable
+                              placeholder={navigation.state.params.hashtag}
+                              autoCapitalize="none"
+                              keyboardType="email-address"
+                              returnKeyType="search"
+                              onChangeText={(hashtag) => navigation.state.params.hashtag = hashtag}
+                              onSubmitEditing={navigation.state.params._submit}
+                              autoCorrect={false}
+                              placeholderTextColor="#000"/>
+
+        }
 
         return {
             headerLeft: <View style={{flexDirection: 'row'}}>
-                <Text style={{color: 'white', paddingLeft: 20, marginTop: 5}} onPress={() => {
-                    navigation.goBack()
-                }}>Back</Text>
-                <TextInput underlineColorAndroid="transparent"
-                           style={{
-                               marginLeft: 20,
-                               width: 300,
-                               height: 30,
-                               fontSize: 16,
-                               paddingHorizontal: 20,
-                               backgroundColor: '#fff',
-                               borderRadius: 5,
-                               color: '#000'
-                           }}
-                           editable
-                           placeholder={navigation.state.params.hashtag}
-                           autoCapitalize="none"
-                           keyboardType="email-address"
-                           returnKeyType="search"
-                           onChangeText={(hashtag) => navigation.state.params.hashtag = hashtag}
-                           onSubmitEditing={navigation.state.params._submit}
-                           autoCorrect={false}
-                           placeholderTextColor="#000"/>
-
+                <Icon name="arrow-round-back" size={30}
+                      style={{marginLeft: 10}} color="#fff" onPress={() => navigation.goBack()}/>
+                {view}
             </View>,
         }
     };
 
     _fetchData = () => {
-        axios.defaults.headers.common['Authorization'] = 'Bearer ' + this.props.access_token;
-        console.log(axios.defaults.headers.common['Authorization']);
+        instance.defaults.headers.common['Authorization'] = 'Bearer ' + this.props.access_token;
+        console.log(instance.defaults.headers.common['Authorization']);
 
         let from = this.state.from;
         let size = this.state.size;
 
         let searchTerm = this.props.navigation.state.params.hashtag.split('#');
 
-        axios.get('/share/search?from=' + from + '&size=' + size + '&term=' + searchTerm[1])
+        instance.get('/share/search?from=' + from + '&size=' + size + '&term=' + searchTerm[1])
             .then(response => {
 
                 if (this.state.tweets.length === 0) {
@@ -92,6 +120,14 @@ class ViewHashtags extends Component {
     };
     _submit = () => {
         console.log('submit...', this.props.navigation)
+    };
+
+    _navigate = (match) => {
+        if (match.matchedText.includes('@'))
+            this.props.navigation.navigate('ViewMention', {mention: match.matchedText});
+        else if (match.matchedText.includes('#'))
+            this.props.navigation.navigate('ViewHashtags', {hashtag: match.matchedText})
+
     };
 
     constructor(props) {

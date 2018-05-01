@@ -3,74 +3,171 @@ import {
     Alert,
     Animated,
     Button,
-    Image,
+    ImageBackground,
     Keyboard,
     PixelRatio,
+    Platform,
     StyleSheet,
     Text,
     TextInput,
-    TouchableOpacity,
+    TouchableHighlight,
     View
 } from 'react-native'
-import axios from "../../../Services/Services";
+
+import querystring from 'querystring'
+
+import Spinner from 'react-native-loading-spinner-overlay';
+import {instance, instance2} from "../../../Services/Services";
 import ImagePicker from "react-native-image-picker";
-import ImgToBase64 from 'react-native-image-base64';
+import Icon from "react-native-ionicons";
+import {connect} from "react-redux";
 
 class Tweet extends Component {
 
 
     static navigationOptions = ({navigation}) => {
-        console.log(navigation);
         return {
-            headerLeft: <View style={{flex: 1, justifyContent: 'center'}}>
-                <Text style={{color: 'white', paddingLeft: 20, marginTop: 5}} onPress={() => {
-                    navigation.goBack()
-                }}>Back</Text>
-            </View>,
+            headerLeft: <Icon name="arrow-round-back" size={30}
+                              style={{marginLeft: 10}} color="#fff" onPress={() => navigation.goBack()}/>,
             headerTitle: <View style={{flex: 1, justifyContent: 'center'}}>
                 <Text style={{color: 'white'}}>{navigation.state.params.title}</Text>
-            </View>
+            </View>,
+            headerRight: <Icon name="send" size={30}
+                               color="#fff" style={{marginRight: 10}} onPress={navigation.state.params.share}/>
         }
     };
+
     keyboardWillShow = (event) => {
-        console.log("keyboardWillShow");
+
         Animated.parallel([
             Animated.timing(this.keyboardHeight, {
                 duration: event.duration,
                 toValue: event.endCoordinates.height,
             })
         ]).start();
+
+        this.setState({
+            keyboardOpen: true
+        })
     };
     keyboardWillHide = (event) => {
-        console.log("keyboardWillHide");
+
         Animated.parallel([
             Animated.timing(this.keyboardHeight, {
                 duration: event.duration,
                 toValue: 0,
             })
         ]).start();
+
+        this.setState({
+            keyboardOpen: false
+        })
     };
     _submit = () => {
-        axios.defaults.headers.common['Authorization'] = 'Bearer ' + this.props.access_token;
-        console.log(axios.defaults.headers.common['Authorization']);
+        instance2.defaults.headers.common['Authorization'] = 'Bearer ' + this.props.access_token;
+        instance.defaults.headers.common['Authorization'] = 'Bearer ' + this.props.access_token;
+        this.setState({
+            loading: true
+        });
+        if (this.state.message === '') {
+            this.setState({
+                loading: false
+            });
+            Alert.alert("Yolibe", "Cannot share empty feed",
+                [{
+                    text: 'OK', onPress: () => {
+                        this.setState({
+                            loading: false
+                        });
+                    }
+                }], {cancelable: false})
 
-        let data = {
-            media1: {},
-            field1: this.state.message
-        };
-        axios.post('/share/create', data)
-            .then(response => {
+        }
+        else if (this.state.ImageSource.length === 0) {
 
-                Alert.alert("Yolibe", "Tweet Shared Successfully",
-                    [{text: 'OK', onPress: () => this.props.navigation.goBack()}], {cancelable: false})
+            let data = {
+                media1: {},
+                field1: this.state.message
+            };
+            instance.post('/share/create', data)
+                .then(response => {
+
+                    Alert.alert("Yolibe", "Tweet Shared Successfully",
+                        [{
+                            text: 'OK', onPress: () => {
+                                this.setState({
+                                    loading: false
+                                });
+                                this.props.navigation.goBack()
+                            }
+                        }], {cancelable: false})
+                })
+                .catch(error => {
+                    console.log(error);
+                    Alert.alert("Yolibe", "Something went wrong!",
+                        [{
+                            text: 'OK', onPress: () => {
+                                this.setState({
+                                    loading: false
+                                });
+                            }
+                        }], {cancelable: false})
+                })
+        }
+        else {
+            let ImageSource = this.state.ImageSource;
+
+            let data = querystring.stringify({
+                'base64fileName': ImageSource[0].fileName,
+                'base64Data': ImageSource[0].base64
+            });
+
+            instance2.post('/upload', data)
+                .then(response => {
+                    let photoId = response.data.item.id;
+                    let path = response.data.item.path;
+
+                    let media1 = {
+                        id: photoId,
+                        path: path
+                    };
+
+                    data = {
+                        field1: this.state.message,
+                        media1: media1
+                    };
+
+                    instance.post('/share/create', data)
+                        .then(response => {
+                            this.setState({
+                                loading: false
+                            });
+                            console.log(response)
+                        })
+                        .catch(error => console.log(error))
+
+                }).catch(error => {
+                console.log(error)
             })
-            .catch(error => {
-                console.log(error);
-                Alert.alert("Yolibe", "Something went wrong!",
-                    [{text: 'OK', onPress: () => console.log('OK Pressed')}], {cancelable: false})
+        }
+    };
+    removePhoto = (key) => {
 
+        let ImageSource = this.state.ImageSource;
+        let newImageSources = [];
+        let removedElement = ImageSource[key];
 
-            })
+        for (let i = 0; i < ImageSource.length; i++) {
+            if (ImageSource[i] === removedElement) {
+
+            }
+            else {
+                newImageSources.push(ImageSource[i]);
+            }
+        }
+        this.setState({
+            ImageSource: newImageSources
+        })
     };
 
     constructor(props) {
@@ -79,62 +176,62 @@ class Tweet extends Component {
         this.state = {
             message: '',
             ImageSource: [],
-            Image64Base: []
-        }
-        ;
+            keyboardOpen: false,
+            loading: false
+        };
 
         this.keyboardHeight = new Animated.Value(0);
     }
 
     selectPhotoTapped() {
-        const options = {
-            quality: 1.0,
-            maxWidth: 500,
-            maxHeight: 500,
-            storageOptions: {
-                skipBackup: true
-            }
-        };
+        let options;
+        if (Platform.OS === 'ios') {
+            options = {
+                quality: 1.0,
+                maxWidth: 500,
+                maxHeight: 500,
+                storageOptions: {
+                    skipBackup: true
+                },
+                mediaType: 'mixed',
+                videoQuality: 'medium',
+                allowsEditing: true
+            };
+
+        }
+        else {
+            options = {
+                quality: 1.0,
+                maxWidth: 500,
+                maxHeight: 500,
+                storageOptions: {
+                    skipBackup: true
+                },
+                videoQuality: 'high'
+            };
+        }
 
         ImagePicker.showImagePicker(options, (response) => {
-            console.log('Response = ', response);
+            console.log('Response = ', response.data);
 
             if (response.didCancel) {
-                console.log('User cancelled photo picker');
             }
             else if (response.error) {
-                console.log('ImagePicker Error: ', response.error);
             }
             else if (response.customButton) {
-                console.log('User tapped custom button: ', response.customButton);
             }
             else {
-                let source = {uri: response.uri};
+                let source = {uri: response.uri, base64: response.data, fileName: response.fileName};
 
                 //You can also display the image using data:
                 //let source = { uri: 'data:image/jpeg;base64,' + response.data };
-
                 let imageSource = this.state.ImageSource;
-                let image64Base = this.state.Image64Base;
 
                 if (imageSource.length === 0) {
                     imageSource.push(source);
                     this.setState({
-
                         ImageSource: imageSource
-
                     });
-
-                    ImgToBase64.getBase64String(response.uri)
-                        .then(base64String => {
-                            console.log(base64String);
-                            let image64 = {id: 0, imageBase64: base64String};
-                            image64Base.push(image64);
-                            this.setState({
-                                Image64Base: image64Base
-                            });
-                            console.log("state -> ", this.state)
-                        }).catch(err => console.log((err)));
                 }
 
                 else if (imageSource.includes(source)) {
@@ -145,43 +242,33 @@ class Tweet extends Component {
                     this.setState({
                         ImageSource: imageSource
                     });
-
-                    let size = imageSource.length;
-
-                    ImgToBase64.getBase64String(response.uri)
-                        .then(base64String => {
-                            console.log(base64String);
-                            let image64 = {id: size - 1, imageBase64: base64String};
-                            image64Base.push(image64);
-                            this.setState({
-                                Image64Base: image64Base
-                            });
-                            console.log("state -> ", this.state)
-                        }).catch(err => console.log((err)));
                 }
             }
         });
     }
 
-    componentWillMount() {
-        console.log("Keyboard componentWillMount");
-        this.keyboardWillShowSub = Keyboard.addListener('keyboardWillShow', this.keyboardWillShow);
-        this.keyboardWillHideSub = Keyboard.addListener('keyboardWillHide', this.keyboardWillHide);
-    }
-
     componentWillUnmount() {
-        console.log("Keyboard componentWillUnmount");
         this.keyboardWillShowSub.remove();
         this.keyboardWillHideSub.remove();
     }
 
+    componentWillMount() {
+        this.keyboardWillShowSub = Keyboard.addListener('keyboardWillShow', this.keyboardWillShow);
+        this.keyboardWillHideSub = Keyboard.addListener('keyboardWillHide', this.keyboardWillHide);
+        this.props.navigation.setParams({
+            share: this._submit.bind(this)
+        })
+    }
+
     render() {
         let view;
+        let footerView;
 
         if (this.state.ImageSource.length === 0) {
             view =
                 <View style={styles.container}>
                     <TextInput
+                        underlineColorAndroid="transparent"
                         style={styles.input}
                         value={this.state.message}
                         multiline
@@ -189,7 +276,7 @@ class Tweet extends Component {
                         ref={ref => {
                             this._emailInput = ref
                         }}
-                        placeholder="Type your share"
+                        placeholder="What's on your mind?"
                         autoCapitalize="none"
                         autoCorrect={false}
                         returnKeyType="send"
@@ -203,6 +290,7 @@ class Tweet extends Component {
             view =
                 <View style={styles.container}>
                     <TextInput
+                        underlineColorAndroid="transparent"
                         style={{
                             flex: 0.7,
                             margin: 20,
@@ -211,6 +299,7 @@ class Tweet extends Component {
                             borderRadius: 4,
                             borderColor: '#ccc',
                             fontSize: 16,
+                            textAlignVertical: 'top'
                         }}
                         value={this.state.message}
                         multiline
@@ -218,7 +307,7 @@ class Tweet extends Component {
                         ref={ref => {
                             this._emailInput = ref
                         }}
-                        placeholder="image selected"
+                        placeholder="What's on your mind?"
                         autoCapitalize="none"
                         autoCorrect={false}
                         returnKeyType="send"
@@ -240,11 +329,22 @@ class Tweet extends Component {
 
                                 this.state.ImageSource.map((url, i) => {
                                     {
+                                        const key = parseInt(Math.random() * 10000);
                                         return (
-                                            <View>
-                                                <Image key={i} style={styles.ImageContainer} source={{uri: url.uri}}/>
-                                                <Button title="Remove"/>
-                                            </View>
+
+                                            <ImageBackground key={key + 2} style={styles.ImageContainer}
+                                                             source={{uri: url.uri}}>
+                                                <View style={{
+                                                    flex: 1,
+                                                    alignItems: 'center',
+                                                    justifyContent: 'flex-end',
+                                                    backgroundColor: 'rgba(255,255,255,0)'
+                                                }} key={key + 3}>
+                                                    <TouchableHighlight onPress={this.removePhoto.bind(this, i)}>
+                                                        <Icon name="ios-trash-outline" size={40} color="#0f0"/>
+                                                    </TouchableHighlight>
+                                                </View>
+                                            </ImageBackground>
                                         )
                                     }
                                 })
@@ -254,22 +354,29 @@ class Tweet extends Component {
                 </View>
         }
 
+
+        if (this.state.keyboardOpen) {
+            footerView = <View style={{
+                flex: 0.1,
+                backgroundColor: 'rgba(255,255,255,1)',
+            }}>
+                <Button title="SHARE PHOTOS/VIDEO" onPress={this.selectPhotoTapped.bind(this)}/>
+            </View>
+        }
+        else {
+            footerView = <View style={{
+                flex: 0.08,
+                backgroundColor: 'rgba(255,255,255,1)'
+            }}>
+                <Button title="SHARE PHOTOS/VIDEO" onPress={this.selectPhotoTapped.bind(this)}/>
+            </View>
+        }
+
         return (
             <Animated.View style={[styles.container, {paddingBottom: this.keyboardHeight}]}>
                 {view}
-                <View style={{
-                    flex: 0.08,
-                    backgroundColor: 'rgba(255,255,255,1)',
-                    justifyContent: 'flex-start',
-                    alignItems: 'center',
-                    flexDirection: 'row'
-                }}>
-                    <View style={{justifyContent: 'flex-start', marginLeft: 30}}>
-                        <TouchableOpacity onPress={this.selectPhotoTapped.bind(this)}>
-                            <Text>Remove</Text>
-                        </TouchableOpacity>
-                    </View>
-                </View>
+                {footerView}
+                <Spinner visible={this.state.loading} textContent={"Loading..."} textStyle={{color: '#FFF'}}/>
             </Animated.View>
         )
     }
@@ -298,6 +405,7 @@ const styles = StyleSheet.create({
         borderRadius: 4,
         borderColor: '#ccc',
         fontSize: 16,
+        textAlignVertical: 'top'
     },
     legal: {
         margin: 10,
@@ -311,29 +419,26 @@ const styles = StyleSheet.create({
     },
     ImageContainer: {
         flex: 1,
-        marginTop: 20,
-        marginLeft: 20,
+        flexDirection: 'row',
+        margin: 20,
         width: 200,
         height: 200,
         borderColor: '#9B9B9B',
         borderWidth: 1 / PixelRatio.get(),
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: '#CDDC39',
-
+        backgroundColor: '#CDDC39'
     },
 });
 
 const xOffset = new Animated.Value(0);
 
 
-// const mapStateToProps = (state) => {
-//     return {
-//         username: state.username,
-//         access_token: state.access_token
-//     }
-// };
-//
-//
-// export default connect(mapStateToProps)(Tweet)
-export default Tweet
+const mapStateToProps = (state) => {
+    return {
+        username: state.username,
+        access_token: state.access_token
+    }
+};
+
+
+export default connect(mapStateToProps)(Tweet)
+//export default Tweet

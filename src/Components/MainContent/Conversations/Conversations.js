@@ -1,49 +1,56 @@
 import React, {Component} from 'react'
-import {ListView, View} from "react-native";
+import {ListView, Text, View} from "react-native";
 import update from "immutability-helper/index";
 import {connect} from "react-redux";
 
-import axios from "../../../Services/Services";
+import {instance} from "../../../Services/Services";
 import Conversation from "./Conversation";
-import Footer from "../Home/Footer";
+import NewConversation from "./NewConversation";
 
 class Conversations extends Component {
 
-    _navigate = (match) => {
-        console.log(match.matchedText);
+    static navigationOptions = ({navigation}) => {
+        return {
+            headerTitle: <Text style={{color: 'white', paddingRight: 20}}>Chats</Text>
+        }
+    };
 
-        if (match.matchedText.includes('@'))
-            this.props.navigation.navigate('ViewMention', {mention: match.matchedText});
-        else if (match.matchedText.includes('#'))
-            this.props.navigation.navigate('ViewHashtags', {hashtag: match.matchedText})
+    _navigate = (match, title) => {
+        this.props.navigation.navigate('NewConversation', {
+            animated: true,
+            animationType: 'fade',
+            title: title,
+            id: match
+        })
     };
 
     _fetchData = () => {
-        axios.defaults.headers.common['Authorization'] = 'Bearer ' + this.props.access_token;
-        console.log(axios.defaults.headers.common['Authorization']);
+        instance.defaults.headers.common['Authorization'] = 'Bearer ' + this.props.access_token;
 
         let size = this.state.size;
         let epochTimeStamp = new Date().getTime();
 
-        axios.get('/threads?before=' + epochTimeStamp + '&max=' + size)
+        console.log(size);
+
+        instance.get('/threads?before=' + epochTimeStamp + '&max=' + size)
             .then(response => {
 
-                if (this.state.tweets.length === 0) {
+                if (this.state.conversations.length === 0) {
                     this.setState({
                         isRefreshing: true,
-                        tweets: response.data.items,
+                        conversations: response.data.items,
                         dataSource: this.state.dataSource.cloneWithRows(response.data.items),
                         isRefreshing: false
                     })
                 }
 
                 else {
-                    let tweets = this.state.tweets;
+                    let tweets = this.state.conversations;
                     let newTweets = update(tweets, {$push: response.data.items});
 
                     this.setState({
                         isRefreshing: true,
-                        tweets: newTweets,
+                        conversations: newTweets,
                         dataSource: this.state.dataSource.cloneWithRows(newTweets),
                         isRefreshing: false
                     });
@@ -55,9 +62,9 @@ class Conversations extends Component {
                 console.log(error);
             })
     };
-    _renderRow = (tweet) => {
+    _renderRow = (conversation) => {
         return (
-            <Conversation key={Math.random()} _navigate={this._navigate} tweetDetails={tweet}/>
+            <Conversation key={Math.random()} _navigate={this._navigate} conversations={conversation}/>
         )
     };
 
@@ -65,7 +72,7 @@ class Conversations extends Component {
         super(props);
 
         this.state = {
-            tweets: [],
+            conversations: [],
             dataSource: new ListView.DataSource({
                 rowHasChanged: (row1, row2) => row1 !== row2
             }),
@@ -82,8 +89,7 @@ class Conversations extends Component {
     render() {
         return (
             <View style={{flex: 1, justifyContent: 'center', backgroundColor: '#fff', alignItems: 'center'}}>
-                <ListView dataSource={this.state.dataSource} renderRow={this._renderRow}
-                          renderFooter={() => <Footer fetchData={this._fetchData.bind(this)}/>}/>
+                <ListView dataSource={this.state.dataSource} renderRow={this._renderRow}/>
             </View>
         )
     }

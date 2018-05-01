@@ -1,8 +1,9 @@
 import React, {Component} from 'react'
-import {Image, StyleSheet, Text, TextInput, View} from 'react-native'
-import axios from "../../../Services/Services";
+import {Dimensions, Image, Platform, StyleSheet, Text, TextInput, View} from 'react-native'
+import {instance} from "../../../Services/Services";
 
 import {connect} from "react-redux";
+import Icon from "react-native-ionicons";
 
 class ViewMention extends Component {
 
@@ -10,32 +11,62 @@ class ViewMention extends Component {
 
         console.log(navigation.state);
 
+        const {width} = Dimensions.get('window');
+
+        let view;
+        if (Platform.OS === 'android') {
+            view = <TextInput underlineColorAndroid="transparent"
+                              style={{
+                                  marginLeft: 20,
+                                  width: width / 1.5,
+                                  height: 40,
+                                  fontSize: 16,
+                                  paddingHorizontal: 20,
+                                  backgroundColor: '#fff',
+                                  borderRadius: 5,
+                                  color: '#000'
+                              }}
+                              editable
+                              placeholder={navigation.state.params.mention}
+                              autoCapitalize="none"
+                              keyboardType="email-address"
+                              returnKeyType="search"
+                              onChangeText={(mention) => navigation.state.params.mention = mention}
+                              onSubmitEditing={navigation.state.params._submit}
+                              autoCorrect={false}
+                              placeholderTextColor="#000"/>
+
+        }
+        else {
+            view = <TextInput underlineColorAndroid="transparent"
+                              style={{
+                                  marginLeft: 20,
+                                  width: width / 1.5,
+                                  height: 30,
+                                  fontSize: 16,
+                                  paddingHorizontal: 20,
+                                  backgroundColor: '#fff',
+                                  borderRadius: 5,
+                                  color: '#000'
+                              }}
+                              editable
+                              placeholder={navigation.state.params.mention}
+                              autoCapitalize="none"
+                              keyboardType="email-address"
+                              returnKeyType="search"
+                              onChangeText={(mention) => navigation.state.params.mention = mention}
+                              onSubmitEditing={navigation.state.params._submit}
+                              autoCorrect={false}
+                              placeholderTextColor="#000"/>
+
+        }
+
+
         return {
             headerLeft: <View style={{flexDirection: 'row'}}>
-                <Text style={{color: 'white', paddingLeft: 20, marginTop: 5}} onPress={() => {
-                    navigation.goBack()
-                }}>Back</Text>
-                <TextInput underlineColorAndroid="transparent"
-                           style={{
-                               marginLeft: 20,
-                               width: 300,
-                               height: 30,
-                               fontSize: 16,
-                               paddingHorizontal: 20,
-                               backgroundColor: '#fff',
-                               borderRadius: 5,
-                               color: '#000'
-                           }}
-                           editable
-                           placeholder={navigation.state.params.mention}
-                           autoCapitalize="none"
-                           keyboardType="email-address"
-                           returnKeyType="search"
-                           onChangeText={(mention) => navigation.state.params.mention = mention}
-                           onSubmitEditing={navigation.state.params._submit}
-                           autoCorrect={false}
-                           placeholderTextColor="#000"/>
-
+                <Icon name="arrow-round-back" size={30}
+                      style={{marginLeft: 10}} color="#fff" onPress={() => navigation.goBack()}/>
+                {view}
             </View>,
         }
     };
@@ -47,12 +78,12 @@ class ViewMention extends Component {
     };
 
     _fetchData = () => {
-        axios.defaults.headers.common['Authorization'] = 'Bearer ' + this.props.access_token;
-        console.log(axios.defaults.headers.common['Authorization']);
+        instance.defaults.headers.common['Authorization'] = 'Bearer ' + this.props.access_token;
+        console.log(instance.defaults.headers.common['Authorization']);
 
         let mention = this.props.navigation.state.params.mention.split('@');
 
-        axios.get('/handle/invoke/' + mention[1])
+        instance.get('/handle/invoke/' + mention[1])
             .then(response => {
                 let fullName = response.data.items.user.fullName;
                 let profilePic = response.data.items.user.profile.path;
@@ -90,15 +121,19 @@ class ViewMention extends Component {
         this.props.navigation.setParams({_submit: this._submit});
     }
     render() {
-        return (
-            <View style={{flex: 1, flexDirection: 'column'}}>
+        let view;
+        if (this.state.profilePic === '') {
+            view = <Text>Loading...</Text>
+        }
+        else {
+            view = <View style={{flex: 1}}>
                 <View style={{
                     flex: 1,
                     flexDirection: 'column',
                     alignItems: 'center',
                 }}>
                     <Image
-                        style={{width: 200, height: 200, marginTop: 20, borderRadius: 50}}
+                        style={{width: 200, height: 200, marginTop: 20, borderRadius: 100}}
                         source={{uri: this.state.profilePic}}
                     />
                 </View>
@@ -115,6 +150,12 @@ class ViewMention extends Component {
                     <Text style={{color: 'blue', fontSize: 20, marginLeft: 10}}> Shares </Text>
                     <Text style={{color: 'blue', fontSize: 20, marginLeft: 10}}> Connections </Text>
                 </View>
+
+            </View>
+        }
+        return (
+            <View style={{flex: 1, flexDirection: 'column'}}>
+                {view}
             </View>
         )
     }
